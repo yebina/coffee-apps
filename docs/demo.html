@@ -1,0 +1,1956 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>豆帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #F1F3EE;
+  --surface: #FFFFFF;
+  --surface-2: #F6F7F3;
+  --ink: #1C201C;
+  --ink-2: #485049;
+  --ink-3: #646C64;
+  --line: #DDE1D8;
+  --line-2: #C6CBC0;
+  --roast: #6B3F27;
+  --roast-hover: #56311E;
+  --roast-soft: #F3EAE3;
+  --roast-track: #E8DAD0;
+  --on-roast: #FFFFFF;
+  --green: #4B7255;
+  --green-soft: #E3EBE3;
+  --green-track: #D5E1D6;
+  --warn: #8A5200;
+  --warn-soft: #FAEFD8;
+  --danger: #B3261E;
+  --danger-soft: #FBE9E7;
+  --focus: #2E68D6;
+  --shadow: 0 1px 2px rgba(28, 32, 28, .06), 0 8px 24px rgba(28, 32, 28, .10);
+  --radius: 10px;
+  --tabbar-h: 0px;
+  --font: "IBM Plex Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111411;
+    --surface: #191D19;
+    --surface-2: #1F241F;
+    --ink: #E5E9E2;
+    --ink-2: #B4BBB2;
+    --ink-3: #8D958C;
+    --line: #2B312A;
+    --line-2: #3A4239;
+    --roast: #D39B76;
+    --roast-hover: #E0AE8C;
+    --roast-soft: #2E231C;
+    --roast-track: #3B2D23;
+    --on-roast: #1A110B;
+    --green: #8CB896;
+    --green-soft: #1E2B21;
+    --green-track: #26362A;
+    --warn: #E2A94F;
+    --warn-soft: #30250F;
+    --danger: #F28B7F;
+    --danger-soft: #371C19;
+    --focus: #8DB2FF;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111411;
+  --surface: #191D19;
+  --surface-2: #1F241F;
+  --ink: #E5E9E2;
+  --ink-2: #B4BBB2;
+  --ink-3: #8D958C;
+  --line: #2B312A;
+  --line-2: #3A4239;
+  --roast: #D39B76;
+  --roast-hover: #E0AE8C;
+  --roast-soft: #2E231C;
+  --roast-track: #3B2D23;
+  --on-roast: #1A110B;
+  --green: #8CB896;
+  --green-soft: #1E2B21;
+  --green-track: #26362A;
+  --warn: #E2A94F;
+  --warn-soft: #30250F;
+  --danger: #F28B7F;
+  --danger-soft: #371C19;
+  --focus: #8DB2FF;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body { margin: 0; color: var(--ink); font-family: var(--font); font-size: 14px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+h1, h2, h3, p { margin: 0; }
+a { color: var(--ink); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+.muted { color: var(--ink-3); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.small { font-size: 13px; }
+.prewrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.lead { color: var(--ink-2); max-width: 65ch; }
+.is-bad { color: var(--danger); }
+.is-warn { color: var(--warn); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.boot-error { padding: 24px; }
+
+/* shell */
+.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
+.side { position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px 14px 16px; background: var(--surface); border-right: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 8px; padding-inline: 6px; }
+.brand .icon { color: var(--roast); }
+.brand-name { font-size: 19px; font-weight: 700; letter-spacing: .12em; }
+.badge { font-size: 11px; font-weight: 600; line-height: 1; padding: 4px 6px; border-radius: 4px; background: var(--roast-soft); color: var(--roast); letter-spacing: .04em; }
+.side-cta { display: grid; gap: 8px; }
+.side-nav { display: flex; flex-direction: column; gap: 14px; }
+.nav-group { display: flex; flex-direction: column; gap: 2px; }
+.nav-label { font-size: 11px; font-weight: 600; color: var(--ink-3); letter-spacing: .06em; padding: 0 10px 2px; }
+.nav-item { display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--ink-2); font-weight: 500; text-align: left; cursor: pointer; }
+.nav-item:hover { background: var(--surface-2); color: var(--ink); }
+.nav-item.is-active { background: var(--roast-soft); color: var(--ink); font-weight: 700; }
+.side-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); }
+.main-col { min-width: 0; }
+.main { padding-inline: 32px; padding-block: 28px 72px; }
+.main-inner { max-width: 1100px; margin-inline: auto; display: flex; flex-direction: column; gap: 20px; }
+.topbar, .tabbar { display: none; }
+@media (max-width: 899px) {
+  :root { --tabbar-h: 62px; }
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side { display: none; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; min-height: 56px; padding-inline: 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .main { padding-inline: 16px; padding-block: 16px calc(var(--tabbar-h) + 40px + env(safe-area-inset-bottom, 0px)); }
+  .tabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--surface); border-top: 1px solid var(--line); }
+}
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: var(--tabbar-h); border: 0; background: transparent; color: var(--ink-3); font-size: 11px; font-weight: 600; cursor: pointer; }
+.tab.is-active { color: var(--roast); }
+
+/* page head */
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
+.page-head-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.back { align-self: flex-start; border: 0; background: none; padding: 0; margin-bottom: 4px; color: var(--ink-3); font-size: 13px; cursor: pointer; }
+.back:hover { color: var(--ink); }
+.eyebrow { font-size: 12px; color: var(--ink-3); letter-spacing: .02em; overflow-wrap: anywhere; }
+.title { font-size: 24px; line-height: 1.35; font-weight: 700; letter-spacing: .01em; text-wrap: balance; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.h2 { font-size: 16px; font-weight: 700; }
+.section { display: flex; flex-direction: column; gap: 10px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; }
+@media (max-width: 899px) { .title { font-size: 21px; } }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.2; white-space: nowrap; cursor: pointer; transition: background-color .12s ease, border-color .12s ease; }
+.btn:hover { background: var(--surface-2); border-color: var(--ink-3); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--roast); border-color: var(--roast); color: var(--on-roast); }
+.btn-primary:hover { background: var(--roast-hover); border-color: var(--roast-hover); }
+.btn-quiet { background: transparent; border-color: transparent; color: var(--ink-2); }
+.btn-quiet:hover { background: var(--surface-2); border-color: transparent; }
+.btn-danger { color: var(--danger); }
+.btn-danger.is-armed { background: var(--danger); border-color: var(--danger); color: var(--surface); }
+.btn-small { min-height: 34px; padding: 0 10px; font-size: 13px; }
+.btn-block { width: 100%; }
+.link { border: 0; background: none; padding: 0; color: var(--ink-2); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); cursor: pointer; white-space: nowrap; }
+.link:hover { color: var(--ink); text-decoration-color: currentColor; }
+.icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line-2); border-radius: 8px; background: var(--surface); color: var(--ink-3); font-size: 18px; cursor: pointer; }
+.icon-btn:hover { color: var(--danger); border-color: var(--ink-3); }
+
+/* home */
+.notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 10px 14px; border: 1px dashed var(--line-2); border-radius: var(--radius); color: var(--ink-2); font-size: 13px; }
+.notice p { max-width: 80ch; }
+.quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.quick-btn { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 14px 18px; border: 1px solid var(--line-2); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; }
+.quick-btn:hover { border-color: var(--ink-3); }
+.quick-btn .icon { flex: none; color: var(--roast); }
+.quick-btn strong { display: block; font-size: 16px; }
+.quick-btn small { display: block; font-size: 12px; color: var(--ink-3); }
+.quick-btn.is-primary { background: var(--roast); border-color: var(--roast); color: var(--on-roast); }
+.quick-btn.is-primary .icon, .quick-btn.is-primary small { color: var(--on-roast); }
+.quick-btn.is-primary:hover { background: var(--roast-hover); border-color: var(--roast-hover); }
+@media (max-width: 520px) { .quick { grid-template-columns: minmax(0, 1fr); } .quick-btn { min-height: 64px; } }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.stat { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--surface); min-width: 0; }
+.stat-label { font-size: 12px; color: var(--ink-3); }
+.stat-value { font-size: 22px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.stat-sub { font-size: 12px; color: var(--ink-3); }
+@media (max-width: 700px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat-value { font-size: 19px; } }
+
+/* panels & lists */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.panel-pad { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 12px; padding: 14px 16px 12px; }
+.panel-head-wrap { flex-wrap: wrap; align-items: center; }
+.panel-title { font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+.panel-note { padding: 0 16px 10px; font-size: 12px; color: var(--ink-3); }
+.two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 899px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
+.empty { padding: 18px 16px; color: var(--ink-3); border-top: 1px solid var(--line); }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 16px; width: 100%; padding: 12px 16px; border: 0; border-top: 1px solid var(--line); background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.row:hover { background: var(--surface-2); }
+.panel > .rows:first-child > li:first-child > .row { border-top: 0; border-radius: var(--radius) var(--radius) 0 0; }
+.row-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.row-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 600; overflow-wrap: anywhere; }
+.row-meta { font-size: 12px; font-weight: 400; color: var(--ink-3); overflow-wrap: anywhere; }
+.row-side { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row-num { font-weight: 600; }
+.row-sub { font-size: 12px; color: var(--ink-3); }
+.row-meter { grid-column: 1 / -1; }
+.meter { height: 6px; border-radius: 3px; background: var(--green-track); overflow: hidden; }
+.meter > span { display: block; height: 100%; border-radius: 3px; background: var(--green); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 22px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 500; line-height: 1.4; white-space: nowrap; }
+.chip-warn { border-color: transparent; background: var(--warn-soft); color: var(--warn); }
+.chip-off { color: var(--ink-3); }
+.chip-link { cursor: pointer; }
+.chip-link:hover { border-color: var(--ink-3); color: var(--ink); }
+.swatch { width: 10px; height: 10px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1px var(--line-2); }
+.rating { color: var(--roast); letter-spacing: 1px; }
+.rating .off { color: var(--line-2); }
+
+.kv { display: grid; grid-template-columns: minmax(7em, max-content) minmax(0, 1fr); gap: 8px 18px; margin: 0; }
+.kv dt { color: var(--ink-3); font-size: 13px; }
+.kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+@media (max-width: 520px) { .kv { grid-template-columns: minmax(0, 1fr); gap: 0; } .kv dt { margin-top: 10px; } .kv dt:first-child { margin-top: 0; } }
+.calc-list { display: flex; flex-direction: column; margin: 0; font-variant-numeric: tabular-nums; }
+.calc-list > div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.calc-list > div:last-child { border-bottom: 0; }
+.calc-list dt { color: var(--ink-2); min-width: 0; overflow-wrap: anywhere; }
+.calc-list dd { margin: 0; font-weight: 600; text-align: right; white-space: nowrap; }
+.calc-list .total { border-top: 1px solid var(--line-2); }
+.calc-list .total dt, .calc-list .total dd { color: var(--ink); font-weight: 700; }
+.figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 20px; }
+@media (max-width: 700px) { .figs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fig-label { font-size: 12px; color: var(--ink-3); }
+.fig-value { font-size: 20px; font-weight: 600; line-height: 1.35; }
+.fig-note { font-size: 12px; color: var(--ink-3); }
+.big { font-size: 26px; font-weight: 600; line-height: 1.3; }
+.stock-head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
+@media (max-width: 520px) { .stock-head { grid-template-columns: minmax(0, 1fr); } }
+.desc { display: flex; flex-direction: column; gap: 4px; }
+.danger-zone { display: flex; justify-content: flex-end; }
+
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--line); max-width: 100%; }
+.seg-btn { min-height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-2); font-size: 13px; font-weight: 600; cursor: pointer; }
+.seg-btn.is-on { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line-2); }
+.search { flex: 1 1 220px; max-width: 360px; }
+
+/* tables */
+.table-wrap { overflow-x: auto; }
+.data { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.data th { padding: 8px 12px; border-bottom: 1px solid var(--line); color: var(--ink-3); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; }
+.data td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.data tbody tr:last-child td { border-bottom: 0; }
+.data th:first-child, .data td:first-child { padding-left: 16px; }
+.data th:last-child, .data td:last-child { padding-right: 16px; }
+.data .r { text-align: right; white-space: nowrap; }
+.data .nw { white-space: nowrap; }
+.data tr.is-link { cursor: pointer; }
+.data tr.is-link:hover td { background: var(--surface-2); }
+.data tfoot td { border-top: 1px solid var(--line-2); font-weight: 700; }
+.data.compact th, .data.compact td { padding-top: 6px; padding-bottom: 6px; }
+.cell-link { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 600; text-align: left; cursor: pointer; }
+.cell-link:hover { text-decoration: underline; }
+
+/* forms */
+.form { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.form-narrow { max-width: 860px; width: 100%; }
+.form-section { display: flex; flex-direction: column; gap: 14px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.form-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.span-2 { grid-column: 1 / -1; }
+@media (max-width: 640px) { .grid, .grid-3 { grid-template-columns: minmax(0, 1fr); } }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.req { font-size: 11px; font-weight: 600; color: var(--danger); }
+.hint { font-size: 12px; color: var(--ink-3); }
+.field-error { font-size: 13px; font-weight: 600; color: var(--danger); }
+.input, .select, .textarea { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 16px; line-height: 1.4; }
+.input:hover, .select:hover, .textarea:hover { border-color: var(--ink-3); }
+.input::placeholder, .textarea::placeholder { color: var(--ink-3); opacity: .75; }
+.input:disabled, .select:disabled { background: var(--surface-2); color: var(--ink-3); }
+.select { appearance: none; -webkit-appearance: none; padding-right: 34px; background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%); background-position: calc(100% - 17px) 52%, calc(100% - 12px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+.select-auto { width: auto; max-width: 100%; }
+.textarea { min-height: 88px; resize: vertical; line-height: 1.6; }
+.textarea-sm { min-height: 64px; }
+.input.num { font-variant-numeric: tabular-nums; text-align: right; }
+.input-unit { display: flex; min-width: 0; }
+.input-unit .input { border-radius: 8px 0 0 8px; min-width: 0; }
+.unit { display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--line-2); border-left: 0; border-radius: 0 8px 8px 0; background: var(--surface-2); color: var(--ink-3); font-size: 13px; white-space: nowrap; }
+.inline-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.inline-add .input, .inline-add .select { flex: 1 1 220px; width: auto; min-width: 0; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.check { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--surface); font-size: 13px; cursor: pointer; }
+.check input { width: 16px; height: 16px; margin: 0; accent-color: var(--roast); }
+.check:has(input:checked) { border-color: var(--ink-2); background: var(--surface-2); }
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px 16px; padding: 12px 14px; border-radius: 8px; background: var(--surface-2); font-variant-numeric: tabular-nums; }
+.calc-item { display: flex; flex-direction: column; min-width: 0; }
+.calc-item > span { font-size: 12px; color: var(--ink-3); }
+.calc-item strong { font-size: 17px; font-weight: 600; }
+.calc-note { font-style: normal; font-size: 12px; font-weight: 600; color: var(--warn); }
+.alert { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid; border-radius: 8px; color: var(--ink); }
+.alert-error { border-color: var(--danger); background: var(--danger-soft); }
+.alert-warn { border-color: var(--warn); background: var(--warn-soft); }
+.alert-title { font-weight: 700; }
+.alert ul { margin: 0; padding-left: 1.2em; }
+.alert-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.form-actions { position: sticky; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px)); z-index: 10; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-block: 12px; background: linear-gradient(to top, var(--bg) 70%, transparent); }
+@media (max-width: 899px) { .form-actions .btn { flex: 1 1 0; min-height: 48px; } }
+.form-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+.form-aside { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 12px; }
+.prev { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.prev-title { font-size: 13px; font-weight: 700; }
+details.prev > summary { cursor: pointer; font-size: 14px; font-weight: 700; }
+details.prev > .prev-body { margin-top: 10px; }
+.prev-body { display: flex; flex-direction: column; gap: 8px; }
+.only-mobile { display: none; }
+@media (max-width: 899px) { .form-layout { grid-template-columns: minmax(0, 1fr); } .form-aside { display: none; } .only-mobile { display: block; } }
+.minsec { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; }
+.minsec .input { text-align: center; font-family: var(--mono); }
+.minsec-colon { font-family: var(--mono); font-size: 18px; color: var(--ink-3); }
+.levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.level { display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 58px; padding: 8px 4px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--surface); color: var(--ink-2); font-size: 12px; font-weight: 500; cursor: pointer; }
+.level:hover { border-color: var(--ink-3); }
+.level[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); font-weight: 700; }
+.bean { width: 24px; height: 15px; border-radius: 50%; box-shadow: 0 0 0 1px var(--line-2); }
+.stars { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
+.star { width: 40px; height: 40px; border: 0; border-radius: 6px; background: transparent; color: var(--line-2); font-size: 24px; line-height: 1; cursor: pointer; }
+.star.is-on { color: var(--roast); }
+.stars .muted { margin-left: 8px; font-size: 13px; }
+
+/* sale form */
+.items { display: flex; flex-direction: column; gap: 12px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) 104px 140px 104px 44px; align-items: end; gap: 10px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.item-amount { min-height: 44px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.only-narrow { display: none; }
+@media (max-width: 760px) {
+  .item { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px; grid-template-areas: "prod prod prod" "qty price del" "amt amt amt"; }
+  .item-product { grid-area: prod; } .item-qty { grid-area: qty; } .item-price { grid-area: price; } .item-del { grid-area: del; }
+  .item-amount { grid-area: amt; justify-content: space-between; min-height: 0; }
+  .only-narrow { display: inline; }
+}
+.stock-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.stock-check { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 16px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); font-variant-numeric: tabular-nums; }
+.stock-check.is-short { background: var(--danger-soft); }
+.stock-check-name { font-weight: 600; overflow-wrap: anywhere; }
+.status { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.status-ok { color: var(--ink-2); }
+.status-bad { color: var(--danger); }
+@media (max-width: 640px) { .stock-check { grid-template-columns: minmax(0, 1fr); } }
+
+/* coffee cards */
+.coffee-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 16px; padding: 16px; }
+.card-foot { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.product-form { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.roast-stock { border-top: 1px solid var(--line); }
+.roast-stock > summary { padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.switch { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; cursor: pointer; }
+.switch input { width: 16px; height: 16px; margin: 0; accent-color: var(--roast); }
+
+/* roast timeline */
+.tl { position: relative; height: 26px; }
+.tl-track { position: absolute; left: 0; right: 0; top: 8px; height: 10px; border-radius: 5px; background: var(--roast-track); overflow: hidden; }
+.tl-dev { position: absolute; top: 0; bottom: 0; right: 0; background: var(--roast); }
+.tl-mark { position: absolute; top: 2px; width: 2px; height: 22px; margin-left: -1px; border-radius: 1px; background: var(--ink); }
+.tl-mark-2 { background: var(--ink-3); }
+.tl-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.key { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; vertical-align: -1px; }
+.key-dry { background: var(--roast-track); }
+.key-dev { background: var(--roast); }
+.key-mark { width: 2px; background: var(--ink-3); border-radius: 0; }
+
+/* month chart */
+.colchart { display: flex; align-items: flex-end; gap: 8px; padding-top: 8px; }
+.col { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; border-radius: 6px; cursor: default; }
+.col-plot { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; border-bottom: 1px solid var(--line-2); }
+.col-val { margin-bottom: 4px; font-size: 12px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.col-bar { width: 24px; max-width: 70%; border-radius: 4px 4px 0 0; background: var(--roast); }
+.col.is-hover .col-bar { background: var(--roast-hover); }
+.col-label { padding-top: 6px; font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.tip { position: absolute; z-index: 5; bottom: calc(100% - 4px); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink-2); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; pointer-events: none; }
+.tip strong { color: var(--ink); }
+.col:first-child .tip { left: 0; transform: none; }
+.col:last-child .tip { left: auto; right: 0; transform: none; }
+
+.toast { position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 16px); z-index: 50; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 10px; background: var(--ink); color: var(--bg); font-weight: 600; box-shadow: var(--shadow); }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function () {
+  const rootEl = document.getElementById('root');
+  if (!window.React || !window.ReactDOM || !window.htm) {
+    rootEl.innerHTML = '<p class="boot-error">画面の部品を読み込めませんでした。ネットワークを確認して、ページを再読み込みしてください。</p>';
+    return;
+  }
+  const { useState, useMemo, useEffect, useRef, Fragment } = React;
+  const html = htm.bind(React.createElement);
+
+  /* ---------- 日付・数値の書式 ---------- */
+  const pad2 = n => String(n).padStart(2, '0');
+  const toDateStr = dt => `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
+  const TODAY = toDateStr(new Date());
+  const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
+  function addDays(ds, n) { const [y, m, d] = ds.split('-').map(Number); const dt = new Date(y, m - 1, d); dt.setDate(dt.getDate() + n); return toDateStr(dt); }
+  function addMonths(ym, n) { const [y, m] = ym.split('-').map(Number); const dt = new Date(y, m - 1 + n, 1); return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}`; }
+  function daysBetween(a, b) { const [y1, m1, d1] = a.split('-').map(Number); const [y2, m2, d2] = b.split('-').map(Number); return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000); }
+  function nowLocal() { const dt = new Date(); return `${toDateStr(dt)}T${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`; }
+  function longDate(ds) { const [y, m, d] = ds.split('-').map(Number); return `${y}年${m}月${d}日（${WEEK[new Date(y, m - 1, d).getDay()]}）`; }
+
+  let seq = 0;
+  const uid = p => `${p}${Date.now().toString(36)}${(seq++).toString(36)}`;
+  const cx = (...a) => a.filter(Boolean).join(' ');
+  const sum = (arr, f) => arr.reduce((t, x) => t + f(x), 0);
+  const addTo = (m, k, v) => m.set(k, (m.get(k) || 0) + v);
+  const NEW = '__new__';
+
+  const intFmt = new Intl.NumberFormat('ja-JP');
+  const fmtInt = v => intFmt.format(Math.round(v));
+  const yen = v => Number.isFinite(v) ? `¥${fmtInt(v)}` : '—';
+  const yenMan = v => v >= 10000 ? `¥${(v / 10000).toFixed(1)}万` : yen(v);
+  const fmtG = v => Number.isFinite(v) ? `${fmtInt(v)} g` : '—';
+  const fmtKg = (grams, digits = 2) => Number.isFinite(grams) ? `${(grams / 1000).toLocaleString('ja-JP', { minimumFractionDigits: digits, maximumFractionDigits: digits })} kg` : '—';
+  const pct = r => Number.isFinite(r) ? `${(r * 100).toFixed(1)}%` : '—';
+  const perG = v => Number.isFinite(v) ? `${v.toFixed(2)} 円/g` : '—';
+  const mmss = s => (s == null || !Number.isFinite(s) || s < 0) ? '—' : `${Math.floor(s / 60)}:${pad2(Math.round(s % 60))}`;
+  const fmtDate = ds => ds ? ds.replace(/-/g, '/') : '—';
+  const fmtDT = dt => dt ? dt.replace('T', ' ').replace(/-/g, '/') : '—';
+  const monthLabel = ym => { const [y, m] = ym.split('-'); return `${y}年${Number(m)}月`; };
+  const signedG = v => `${v > 0 ? '＋' : v < 0 ? '−' : '±'}${fmtInt(Math.abs(v))} g`;
+  const isBlank = s => s == null || String(s).trim() === '';
+  function parseNum(s) {
+    if (isBlank(s)) return NaN;
+    const t = String(s).trim()
+      .replace(/[０-９．－]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+      .replace(/[−‐]/g, '-')
+      .replace(/[,，]/g, '');
+    const n = Number(t);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  function secOf(m, s) {
+    if (isBlank(m) && isBlank(s)) return null;
+    const mm = isBlank(m) ? 0 : parseNum(m);
+    const ss = isBlank(s) ? 0 : parseNum(s);
+    if (!Number.isInteger(mm) || !Number.isInteger(ss) || mm < 0 || ss < 0 || ss > 59) return NaN;
+    return mm * 60 + ss;
+  }
+  const okT = v => v != null && Number.isFinite(v);
+  const focusId = id => { const el = document.getElementById(id); if (el) el.focus(); };
+
+  const LEVELS = [
+    { key: 'ライト', color: '#D8BE92' },
+    { key: 'シナモン', color: '#C49A69' },
+    { key: 'ミディアム', color: '#A97A4C' },
+    { key: 'ハイ', color: '#8E6039' },
+    { key: 'シティ', color: '#734A2B' },
+    { key: 'フルシティ', color: '#5A361F' },
+    { key: 'フレンチ', color: '#402616' },
+    { key: 'イタリアン', color: '#2A1910' },
+  ];
+  const levelColor = k => (LEVELS.find(l => l.key === k) || {}).color || 'transparent';
+  const OPTIONS = {
+    channels: ['店頭', 'ネットショップ', 'イベント', '卸', 'その他'],
+    processes: ['ウォッシュド', 'フリーウォッシュド', 'ナチュラル', 'パルプドナチュラル', 'ハニープロセス', 'その他'],
+    ranks: ['トップオブトップ', 'トップスペシャルティ', 'スペシャルティコーヒー', 'プレミアムコーヒー', 'コマーシャルコーヒー'],
+    certs: ['有機JAS', 'フェアトレード', 'レインフォレスト・アライアンス', 'カップ・オブ・エクセレンス', 'その他の認証'],
+    reasons: ['試飲・自家用', 'サンプル', '廃棄', '棚卸しの差', 'その他'],
+  };
+
+  /* ---------- 計算（仕様書「5. 計算ルール」） ---------- */
+  function derive(db, opt = {}) {
+    const ex = opt.excludeSaleId || null;
+    const byId = arr => new Map(arr.map(x => [x.id, x]));
+    const suppliers = byId(db.suppliers), lots = byId(db.lots), coffees = byId(db.coffees), products = byId(db.products), roasts = byId(db.roasts);
+    const lotUsed = new Map(), lotAdj = new Map(), roastAdj = new Map(), roastAlloc = new Map(), roastSales = new Map();
+    for (const r of db.roasts) addTo(lotUsed, r.lotId, r.inputG + (r.handpickG || 0));
+    for (const a of db.adjustments) addTo(a.kind === 'lot' ? lotAdj : roastAdj, a.targetId, a.deltaG);
+    for (const s of db.sales) {
+      if (s.id === ex) continue;
+      for (const it of s.items) for (const al of it.allocs) {
+        addTo(roastAlloc, al.roastId, al.g);
+        if (!roastSales.has(al.roastId)) roastSales.set(al.roastId, []);
+        roastSales.get(al.roastId).push({ sale: s, item: it, g: al.g });
+      }
+    }
+    const lotGPrice = l => l.weightG > 0 ? (l.price + (l.shipping || 0)) / l.weightG : NaN;
+    const lotRemain = l => l.weightG - (lotUsed.get(l.id) || 0) + (lotAdj.get(l.id) || 0);
+    const roastUse = r => r.inputG + (r.handpickG || 0);
+    const roastCost = r => { const l = lots.get(r.lotId); return l ? roastUse(r) * lotGPrice(l) : NaN; };
+    const roastGCost = r => r.outputG > 0 ? roastCost(r) / r.outputG : NaN;
+    const roastRemain = r => r.outputG - (roastAlloc.get(r.id) || 0) + (roastAdj.get(r.id) || 0);
+    const roastsOf = cid => db.roasts.filter(r => r.coffeeId === cid).sort((a, b) => a.at.localeCompare(b.at));
+    const coffeeRemain = cid => sum(roastsOf(cid), roastRemain);
+    const oldestStock = cid => roastsOf(cid).find(r => roastRemain(r) > 0) || null;
+    const latestRoastOf = cid => { const rs = roastsOf(cid); return rs.length ? rs[rs.length - 1] : null; };
+    const productsOf = cid => db.products.filter(p => p.coffeeId === cid).sort((a, b) => a.sizeG - b.sizeG);
+    const itemGrams = it => { const p = products.get(it.productId); return p ? p.sizeG * it.qty : 0; };
+    const itemAmount = it => it.unitPrice * it.qty;
+    const allocCost = al => { const r = roasts.get(al.roastId); return r ? al.g * roastGCost(r) : 0; };
+    const itemCost = it => { const p = products.get(it.productId); return sum(it.allocs, allocCost) + (p ? (p.packCost || 0) * it.qty : 0); };
+    const saleAmount = s => sum(s.items, itemAmount);
+    const saleCost = s => sum(s.items, itemCost);
+    const saleGrams = s => sum(s.items, itemGrams);
+    const productLabel = p => { if (!p) return '（削除された商品）'; const c = coffees.get(p.coffeeId); return `${c ? c.name : ''} ${p.sizeG}g`; };
+    return { suppliers, lots, coffees, products, roasts, lotUsed, lotAdj, roastAdj, roastAlloc, roastSales, lotGPrice, lotRemain, roastUse, roastCost, roastGCost, roastRemain, roastsOf, coffeeRemain, oldestStock, latestRoastOf, productsOf, itemGrams, itemAmount, allocCost, itemCost, saleAmount, saleCost, saleGrams, productLabel };
+  }
+
+  /* 販売の引当：焙煎日の古い焙煎記録から順に出す（先入れ先出し） */
+  function planSale(db, items, opts = {}) {
+    const d = derive(db, { excludeSaleId: opts.excludeSaleId });
+    const remain = new Map(db.roasts.map(r => [r.id, d.roastRemain(r)]));
+    const need = new Map(), short = new Map();
+    const planned = items.map(it => {
+      const p = d.products.get(it.productId);
+      if (!p || !(it.qty > 0)) return { ...it, allocs: [] };
+      const want = p.sizeG * it.qty;
+      addTo(need, p.coffeeId, want);
+      let left = want;
+      const allocs = [];
+      const cands = db.roasts
+        .filter(r => r.coffeeId === p.coffeeId && (!opts.asOf || r.at.slice(0, 10) <= opts.asOf))
+        .sort((a, b) => a.at.localeCompare(b.at));
+      for (const r of cands) {
+        if (left <= 0) break;
+        const avail = remain.get(r.id);
+        if (avail <= 0) continue;
+        const take = Math.min(avail, left);
+        allocs.push({ roastId: r.id, g: take });
+        remain.set(r.id, avail - take);
+        left -= take;
+      }
+      if (left > 0) addTo(short, p.coffeeId, left);
+      return { ...it, allocs };
+    });
+    return { items: planned, need, short, d };
+  }
+  const stripItem = it => ({ id: it.id, productId: it.productId, qty: it.qty, unitPrice: it.unitPrice, allocs: it.allocs });
+
+  /* ---------- サンプルデータ（今日を基準にした日付） ---------- */
+  function buildSeed() {
+    const D = n => addDays(TODAY, -n);
+    const DT = (n, time) => `${D(n)}T${time}`;
+    const suppliers = [
+      { id: 's1', name: 'みどり生豆店（サンプル）' },
+      { id: 's2', name: '港町コーヒー商会（サンプル）' },
+    ];
+    const lot = o => ({ productName: '', englishName: '', code: '', url: '', country: '', area: '', farm: '', producer: '', variety: '', process: '', altitude: '', cropYear: '', grade: '', rank: '', cuppingProfile: '', cuppingScore: '', certs: [], packaging: '', description: '', memo: '', shipping: 0, ...o });
+    const lots = [
+      lot({ id: 'l1', name: 'グアテマラ アンティグア SHB', date: D(100), supplierId: 's2', productName: 'グアテマラ アンティグア サン・ミゲル農園 SHB', englishName: 'Guatemala Antigua San Miguel SHB', code: 'GT-0412', country: 'グアテマラ', area: 'サカテペケス県 アンティグア', farm: 'サン・ミゲル農園', variety: 'ブルボン', process: 'ウォッシュド', altitude: '1,500〜1,700m', cropYear: '2024', grade: 'SHB', rank: 'スペシャルティコーヒー', cuppingProfile: 'ミルクチョコレート、アーモンド、オレンジ、クリーンな後味', cuppingScore: '84.5', packaging: '69kg 麻袋', description: '（サンプル）チョコレートのような甘さと、穏やかな柑橘の酸。', weightG: 1500, price: 2970, shipping: 600 }),
+      lot({ id: 'l2', name: 'エチオピア ゲデオ G1 ナチュラル', date: D(80), supplierId: 's1', productName: 'エチオピア ゲデオ チェレレ G1 ナチュラル', englishName: 'Ethiopia Gedeo Chelele G1 Natural', code: 'ET-1187', country: 'エチオピア', area: 'ゲデオ県 イルガチェフェ', farm: 'チェレレ ウォッシングステーション', producer: '周辺の小規模農家', variety: 'エチオピア在来種', process: 'ナチュラル', altitude: '1,950〜2,150m', cropYear: '2025', grade: 'G1', rank: 'トップスペシャルティ', cuppingProfile: 'ブルーベリー、ジャスミン、ストロベリー、ミルクチョコレート、ジューシーな質感', cuppingScore: '87.5', packaging: '30kg グレインプロ', description: '（サンプル）華やかな香りと、熟した果実の甘さ。浅めの焙煎で果実味が出る。', weightG: 5000, price: 12500, shipping: 1200 }),
+      lot({ id: 'l3', name: 'コロンビア ウイラ スプレモ', date: D(70), supplierId: 's2', productName: 'コロンビア ウイラ ラ・ロマ農園 スプレモ', englishName: 'Colombia Huila La Loma Supremo', code: 'CO-2230', country: 'コロンビア', area: 'ウイラ県', farm: 'ラ・ロマ農園', producer: 'ウイラ小規模生産者グループ', variety: 'カトゥーラ、カスティージョ', process: 'ウォッシュド', altitude: '1,650〜1,800m', cropYear: '2025', grade: 'スプレモ', rank: 'スペシャルティコーヒー', cuppingProfile: 'オレンジ、ブラウンシュガー、ミルクチョコレート、なめらかな質感', cuppingScore: '85.75', certs: ['レインフォレスト・アライアンス'], packaging: '24kg バキューム', description: '（サンプル）柑橘の明るさと黒糖の甘さ。中煎りから深煎りまで使える。', weightG: 10000, price: 19800, shipping: 1500 }),
+      lot({ id: 'l4', name: 'ブラジル ボア・ソルチ ナチュラル', date: D(10), supplierId: 's1', productName: 'ブラジル ミナス ボア・ソルチ農園 ナチュラル', englishName: 'Brazil Minas Boa Sorte Natural', code: 'BR-0905', country: 'ブラジル', area: 'ミナス・ジェライス州 南部', farm: 'ボア・ソルチ農園', producer: '南ミナス生産者組合', variety: 'イエローブルボン', process: 'ナチュラル', altitude: '1,100m', cropYear: '2025', grade: 'No.2 17/18', rank: 'プレミアムコーヒー', cuppingProfile: 'ナッツ、キャラメル、ミルクチョコレート、やわらかな酸味', packaging: '30kg バキューム', description: '（サンプル）甘さとコクのバランスがよく、毎日飲みやすい。', weightG: 5000, price: 9000, shipping: 1000, memo: '仕様書「5. 計算ルール」の計算例と同じ数字にしたロット' }),
+    ];
+    const coffees = [
+      { id: 'c1', name: 'グアテマラ アンティグア 中煎り', description: '', active: false },
+      { id: 'c2', name: 'エチオピア ゲデオ 浅煎り', description: 'ベリーとジャスミンの香り', active: true },
+      { id: 'c3', name: 'コロンビア ウイラ 中煎り', description: 'オレンジと黒糖の甘さ', active: true },
+      { id: 'c4', name: 'コロンビア ウイラ 深煎り', description: 'ビターチョコレートのようなコク', active: true },
+      { id: 'c5', name: 'ブラジル ボア・ソルチ 中煎り', description: 'ナッツとキャラメル', active: true },
+    ];
+    const products = [
+      { id: 'p1', coffeeId: 'c1', sizeG: 200, price: 1500, packCost: 50, active: false },
+      { id: 'p2', coffeeId: 'c2', sizeG: 100, price: 1100, packCost: 40, active: true },
+      { id: 'p3', coffeeId: 'c2', sizeG: 200, price: 2000, packCost: 50, active: true },
+      { id: 'p4', coffeeId: 'c3', sizeG: 100, price: 850, packCost: 40, active: true },
+      { id: 'p5', coffeeId: 'c3', sizeG: 200, price: 1600, packCost: 50, active: true },
+      { id: 'p6', coffeeId: 'c4', sizeG: 200, price: 1600, packCost: 50, active: true },
+      { id: 'p7', coffeeId: 'c5', sizeG: 100, price: 900, packCost: 40, active: true },
+      { id: 'p8', coffeeId: 'c5', sizeG: 200, price: 1700, packCost: 50, active: true },
+    ];
+    const R = (id, n, time, lotId, coffeeId, inputG, handpickG, outputG, totalSec, fcSec, scSec, level, extra = {}) => ({ id, at: DT(n, time), lotId, coffeeId, roaster: '手回し焙煎機', inputG, handpickG, outputG, totalSec, fcSec, scSec, heatMemo: '', level, memo: '', notes: '', rating: null, tastedOn: '', ...extra });
+    const roasts = [
+      R('r1', 96, '10:00', 'l1', 'c1', 490, 10, 416, 640, 530, null, 'ハイ', { notes: 'チョコレートとナッツ。冷めるとオレンジ。', rating: 4, tastedOn: D(93), heatMemo: '強火で投入、8分から中火' }),
+      R('r2', 89, '10:00', 'l1', 'c1', 490, 10, 414, 655, 540, null, 'ハイ', { notes: '少し渋い。1ハゼ後を短くしたい。', rating: 3, tastedOn: D(86) }),
+      R('r3', 82, '10:00', 'l1', 'c1', 490, 10, 418, 630, 525, null, 'ハイ', { notes: '甘さが戻った。', rating: 4, tastedOn: D(79) }),
+      R('r4', 76, '10:00', 'l2', 'c2', 500, 15, 432, 580, 470, null, 'ミディアム', { notes: 'ブルーベリーとジャスミン。', rating: 4, tastedOn: D(72), heatMemo: '強火のまま1ハゼ、直後に弱火' }),
+      R('r5', 66, '14:00', 'l3', 'c3', 500, 10, 423, 630, 520, null, 'ハイ', { notes: 'オレンジとブラウンシュガー。', rating: 4, tastedOn: D(62), heatMemo: '強火で投入、1ハゼで中火' }),
+      R('r6', 65, '15:00', 'l3', 'c4', 500, 10, 405, 740, 530, 700, 'フルシティ', { notes: 'ビターチョコ。2ハゼが始まってすぐ排出。', rating: 4, tastedOn: D(61), heatMemo: '1ハゼ後も中火を保つ' }),
+      R('r7', 55, '10:00', 'l2', 'c2', 500, 15, 430, 590, 475, null, 'ミディアム', { notes: '1ハゼ後 1:55 で甘さが増した。', rating: 5, tastedOn: D(51) }),
+      R('r8', 40, '14:00', 'l3', 'c3', 500, 10, 425, 625, 515, null, 'ハイ', { notes: 'やや平坦。1ハゼまでの火力を上げたい。', rating: 3, tastedOn: D(36) }),
+      R('r9', 33, '10:00', 'l2', 'c2', 500, 20, 428, 595, 480, null, 'ミディアム', { notes: '酸が少し強い。', rating: 3, tastedOn: D(29) }),
+      R('r10', 20, '15:00', 'l3', 'c4', 500, 10, 402, 755, 535, 710, 'フルシティ', { notes: '今までで一番よい。', rating: 5, tastedOn: D(16) }),
+      R('r11', 12, '10:00', 'l2', 'c2', 500, 15, 433, 575, 465, null, 'ミディアム', { heatMemo: '強火のまま1ハゼ、直後に弱火' }),
+      R('r12', 8, '14:00', 'l3', 'c3', 500, 10, 424, 630, 520, null, 'ハイ', {}),
+      R('r13', 7, '10:00', 'l4', 'c5', 500, 20, 425, 630, 510, null, 'ハイ', { notes: 'ナッツとキャラメル。冷めても甘い。', rating: 4, tastedOn: D(4), heatMemo: '強火で投入、1ハゼで中火', memo: '仕様書の計算例と同じ数字' }),
+    ];
+    const adjustments = [
+      { id: 'a1', date: D(65), kind: 'roast', targetId: 'r3', deltaG: -48, reason: '試飲・自家用', memo: '残りを自家用に' },
+      { id: 'a2', date: D(50), kind: 'lot', targetId: 'l2', deltaG: -100, reason: 'サンプル', memo: 'カフェに生豆サンプル' },
+      { id: 'a3', date: D(15), kind: 'lot', targetId: 'l3', deltaG: -35, reason: '棚卸しの差', memo: '棚卸しで実測' },
+    ];
+    const S = (id, n, channel, customer, items, memo = '') => ({ id, date: D(n), channel, customer, memo, items: items.map(([productId, qty, unitPrice], i) => ({ id: `${id}i${i}`, productId, qty, unitPrice, allocs: [] })) });
+    const sales = [
+      S('s01', 94, '店頭', '', [['p1', 1, 1500]]),
+      S('s02', 90, 'ネットショップ', '', [['p1', 1, 1500]]),
+      S('s03', 85, 'イベント', '駅前マルシェ', [['p1', 2, 1500]]),
+      S('s04', 78, '店頭', '', [['p1', 1, 1500]]),
+      S('s05', 70, '卸', '喫茶ことり（サンプル）', [['p1', 1, 1200], ['p3', 1, 1600]], '卸価格'),
+      S('s06', 62, 'ネットショップ', '', [['p3', 1, 2000], ['p5', 1, 1600]]),
+      S('s07', 52, 'イベント', '駅前マルシェ', [['p3', 1, 2000], ['p2', 1, 1100], ['p5', 1, 1600], ['p6', 1, 1600]]),
+      S('s08', 45, '店頭', '', [['p2', 1, 1100], ['p6', 1, 1600]]),
+      S('s09', 38, 'ネットショップ', '', [['p5', 1, 1600], ['p4', 1, 850]]),
+      S('s10', 30, '店頭', '', [['p3', 2, 2000], ['p4', 1, 850]]),
+      S('s11', 18, '卸', '喫茶ことり（サンプル）', [['p6', 1, 1300]], '卸価格'),
+      S('s12', 10, 'ネットショップ', '', [['p3', 1, 2000], ['p2', 1, 1100]]),
+      S('s13', 5, '店頭', '', [['p5', 1, 1600], ['p4', 1, 850]]),
+      S('s14', 3, '店頭', '', [['p8', 1, 1700]], '仕様書の計算例と同じ数字'),
+    ];
+    const db = { suppliers, lots, coffees, products, roasts, sales: [], adjustments: [] };
+    const events = [
+      ...adjustments.map(a => ({ date: a.date, adj: a })),
+      ...sales.map(s => ({ date: s.date, sale: s })),
+    ].sort((x, y) => x.date.localeCompare(y.date));
+    for (const ev of events) {
+      if (ev.adj) { db.adjustments.push(ev.adj); continue; }
+      const plan = planSale(db, ev.sale.items, { asOf: ev.sale.date });
+      db.sales.push({ ...ev.sale, items: plan.items.map(stripItem) });
+    }
+    return db;
+  }
+
+  /* ---------- 小さな部品 ---------- */
+  const ICON_PATHS = {
+    home: html`<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" />`,
+    flame: html`<path d="M12 3c.6 3.2-1.8 5-3.3 7.1C7.6 11.6 7 13 7 14.6 7 18.1 9.3 21 12 21s5-2.9 5-6.4c0-2.4-1.2-4.2-2.4-5.6-.2 1.4-.9 2.4-2 2.9.5-3.2-.4-6.3-.6-8.9z" />`,
+    tag: html`<path d="M20.2 13.3 13.3 20.2a1.8 1.8 0 0 1-2.5 0L3.5 12.9V3.5h9.4l7.3 7.3a1.8 1.8 0 0 1 0 2.5z" /><circle cx="8" cy="8" r="1.4" />`,
+    bean: html`<ellipse cx="12" cy="12" rx="6" ry="8.6" transform="rotate(35 12 12)" /><path d="M8.2 6.9c3.2 1.8 1.9 5.3 4 7.4 1.3 1.3 2.9 1.6 3.6 2.9" />`,
+    more: html`<circle cx="5.5" cy="12" r="1.5" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" /><circle cx="18.5" cy="12" r="1.5" fill="currentColor" stroke="none" />`,
+  };
+  function Icon({ name, size = 22 }) {
+    return html`<svg className="icon" viewBox="0 0 24 24" width=${size} height=${size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">${ICON_PATHS[name]}</svg>`;
+  }
+  function PageHead({ title, eyebrow, back, children }) {
+    return html`<div className="page-head">
+      <div className="page-head-main">
+        ${back ? html`<button type="button" className="back" onClick=${back.go}>‹ ${back.label}</button>` : null}
+        ${eyebrow ? html`<div className="eyebrow">${eyebrow}</div>` : null}
+        <h1 className="title">${title}</h1>
+      </div>
+      ${children ? html`<div className="actions">${children}</div>` : null}
+    </div>`;
+  }
+  const Stat = ({ label, value, sub }) => html`<div className="stat"><div className="stat-label">${label}</div><div className="stat-value">${value}</div>${sub ? html`<div className="stat-sub">${sub}</div>` : null}</div>`;
+  const Fig = ({ label, value, note }) => html`<div><div className="fig-label">${label}</div><div className="fig-value">${value}</div>${note ? html`<div className="fig-note">${note}</div>` : null}</div>`;
+  function Meter({ value, max }) {
+    const r = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
+    return html`<div className="meter" aria-hidden="true"><span style=${{ width: `${r * 100}%` }}></span></div>`;
+  }
+  const isEmptyVal = v => v == null || (typeof v === 'string' && v.trim() === '');
+  function KV({ rows }) {
+    return html`<dl className="kv">${rows.map(([k, v], i) => html`<${Fragment} key=${i}><dt>${k}</dt><dd>${isEmptyVal(v) ? html`<span className="muted">—</span>` : v}</dd></${Fragment}>`)}</dl>`;
+  }
+  function Field({ label, req, hint, htmlFor, wide, children }) {
+    return html`<div className=${cx('field', wide && 'span-2')}>
+      <label className="field-label" htmlFor=${htmlFor}>${label}${req ? html`<span className="req">必須</span>` : null}</label>
+      ${children}
+      ${hint ? html`<div className="hint">${hint}</div>` : null}
+    </div>`;
+  }
+  function UnitInput({ unit, ...rest }) {
+    return html`<div className="input-unit"><input className="input num" inputMode="decimal" autoComplete="off" ...${rest} /><span className="unit">${unit}</span></div>`;
+  }
+  function Seg({ value, onChange, options, label }) {
+    return html`<div className="seg" role="group" aria-label=${label}>
+      ${options.map(([v, l]) => html`<button key=${v} type="button" className=${cx('seg-btn', value === v && 'is-on')} aria-pressed=${value === v} onClick=${() => onChange(v)}>${l}</button>`)}
+    </div>`;
+  }
+  function ConfirmButton({ label, confirmLabel, onConfirm, className = 'btn btn-danger' }) {
+    const [armed, setArmed] = useState(false);
+    useEffect(() => { if (!armed) return undefined; const t = setTimeout(() => setArmed(false), 4000); return () => clearTimeout(t); }, [armed]);
+    return html`<button type="button" className=${cx(className, armed && 'is-armed')} onClick=${() => (armed ? onConfirm() : setArmed(true))}>${armed ? confirmLabel : label}</button>`;
+  }
+  function LevelChip({ level }) {
+    if (!level) return null;
+    return html`<span className="chip"><span className="swatch" style=${{ background: levelColor(level) }}></span>${level}</span>`;
+  }
+  function RatingText({ value }) {
+    if (!value) return html`<span className="muted">未評価</span>`;
+    return html`<span className="rating" aria-label=${`評価 ${value} / 5`}>${'★'.repeat(value)}<span className="off">${'★'.repeat(5 - value)}</span></span>`;
+  }
+  function ErrorList({ errors, innerRef }) {
+    if (!errors.length) return null;
+    return html`<div className="alert alert-error" role="alert" ref=${innerRef}><div className="alert-title">保存できません</div><ul>${errors.map((e, i) => html`<li key=${i}>${e}</li>`)}</ul></div>`;
+  }
+  function useScrollTo(dep, ref) {
+    useEffect(() => { if (dep && ref.current) ref.current.scrollIntoView({ block: 'center' }); }, [dep]);
+  }
+  function NotFound({ ctx, to, label }) {
+    return html`<${PageHead} title="見つかりません" />
+      <div className="panel panel-pad"><p>この記録は削除されたか、見つかりませんでした。</p><div><button type="button" className="btn" onClick=${() => ctx.nav(to)}>${label}の一覧へ</button></div></div>`;
+  }
+  function adjTargetLabel(d, a) {
+    if (a.kind === 'lot') { const l = d.lots.get(a.targetId); return l ? `生豆：${l.name}` : '—'; }
+    const r = d.roasts.get(a.targetId);
+    const c = r ? d.coffees.get(r.coffeeId) : null;
+    return r ? `焙煎豆：${c ? c.name : ''}（${fmtDate(r.at.slice(0, 10))} 焙煎）` : '—';
+  }
+
+  /* ---------- 画面の枠 ---------- */
+  const NAV_GROUPS = [
+    { label: null, items: [['home', 'ホーム']] },
+    { label: '記録する', items: [['roasts', '焙煎記録'], ['sales', '販売'], ['adjust', '在庫調整']] },
+    { label: '在庫', items: [['lots', '生豆ロット'], ['coffees', '銘柄・商品']] },
+    { label: '見る', items: [['reports', '集計']] },
+  ];
+  const SECTION_OF = { home: 'home', lots: 'lots', lot: 'lots', lotForm: 'lots', roasts: 'roasts', roast: 'roasts', roastForm: 'roasts', coffees: 'coffees', sales: 'sales', sale: 'sales', saleForm: 'sales', adjust: 'adjust', reports: 'reports', menu: 'menu' };
+
+  function Sidebar({ ctx }) {
+    const cur = SECTION_OF[ctx.route.name];
+    return html`<aside className="side">
+      <div className="brand"><${Icon} name="bean" size=${24} /><span className="brand-name">豆帳</span><span className="badge">デモ</span></div>
+      <div className="side-cta">
+        <button type="button" className="btn btn-primary btn-block" onClick=${() => ctx.nav('roastForm')}>焙煎を記録</button>
+        <button type="button" className="btn btn-block" onClick=${() => ctx.nav('saleForm')}>販売を記録</button>
+      </div>
+      <nav className="side-nav" aria-label="メニュー">
+        ${NAV_GROUPS.map((grp, gi) => html`<div className="nav-group" key=${gi}>
+          ${grp.label ? html`<div className="nav-label">${grp.label}</div>` : null}
+          ${grp.items.map(([name, label]) => html`<button key=${name} type="button" className=${cx('nav-item', cur === name && 'is-active')} aria-current=${cur === name ? 'page' : undefined} onClick=${() => ctx.nav(name)}>${label}</button>`)}
+        </div>`)}
+      </nav>
+      <div className="side-foot"><${ConfirmButton} className="btn btn-quiet btn-small" label="サンプルデータに戻す" confirmLabel="もう一度押すと戻します" onConfirm=${ctx.reset} /></div>
+    </aside>`;
+  }
+  function TopBar({ ctx }) {
+    return html`<header className="topbar">
+      <div className="brand"><${Icon} name="bean" size=${22} /><span className="brand-name">豆帳</span><span className="badge">デモ</span></div>
+      <button type="button" className="btn btn-primary btn-small" onClick=${() => ctx.nav('roastForm')}>焙煎を記録</button>
+    </header>`;
+  }
+  function TabBar({ ctx }) {
+    const cur = SECTION_OF[ctx.route.name];
+    const tabs = [['home', 'ホーム', 'home'], ['roasts', '焙煎', 'flame'], ['sales', '販売', 'tag'], ['lots', '生豆', 'bean'], ['menu', 'その他', 'more']];
+    return html`<nav className="tabbar" aria-label="メニュー">
+      ${tabs.map(([name, label, icon]) => {
+        const active = name === 'menu' ? ['coffees', 'adjust', 'reports', 'menu'].includes(cur) : cur === name;
+        return html`<button key=${name} type="button" className=${cx('tab', active && 'is-active')} aria-current=${active ? 'page' : undefined} onClick=${() => ctx.nav(name)}><${Icon} name=${icon} /><span>${label}</span></button>`;
+      })}
+    </nav>`;
+  }
+  function DemoNotice({ ctx }) {
+    return html`<div className="notice" role="note">
+      <p>デモ版です。サンプルデータで動いていて、ページを再読み込みすると最初の状態に戻ります。ログイン・問屋の管理・設定の画面は省いています。「ブラジル ボア・ソルチ」のロット・焙煎・販売は、仕様書の計算例と同じ数字です。</p>
+      <${ConfirmButton} className="btn btn-quiet btn-small" label="サンプルデータに戻す" confirmLabel="もう一度押すと戻します" onConfirm=${ctx.reset} />
+    </div>`;
+  }
+
+  /* ---------- ホーム ---------- */
+  function Home({ ctx }) {
+    const { db, d, nav } = ctx;
+    const ym = TODAY.slice(0, 7);
+    const monthSales = db.sales.filter(s => s.date.slice(0, 7) === ym);
+    const amount = sum(monthSales, d.saleAmount), cost = sum(monthSales, d.saleCost), margin = amount - cost;
+    const coffees = db.coffees.filter(c => c.active || d.coffeeRemain(c.id) > 0);
+    const lots = db.lots.filter(l => d.lotRemain(l) > 0).sort((a, b) => a.date.localeCompare(b.date));
+    return html`
+      <${DemoNotice} ctx=${ctx} />
+      <${PageHead} eyebrow=${longDate(TODAY)} title="ホーム" />
+      <div className="quick">
+        <button type="button" className="quick-btn is-primary" onClick=${() => nav('roastForm')}><${Icon} name="flame" size=${26} /><span><strong>焙煎を記録</strong><small>投入量・焙煎後重量・焙煎時間</small></span></button>
+        <button type="button" className="quick-btn" onClick=${() => nav('saleForm')}><${Icon} name="tag" size=${26} /><span><strong>販売を記録</strong><small>商品と数量。在庫から古い順に出します</small></span></button>
+      </div>
+      <section className="section">
+        <div className="section-head"><h2 className="h2">今月の売上</h2><span className="muted small">${monthLabel(ym)}・税抜</span></div>
+        <div className="stats">
+          <${Stat} label="売上" value=${yen(amount)} sub=${`${monthSales.length}件`} />
+          <${Stat} label="粗利" value=${yen(margin)} sub=${`原価 ${yen(cost)}`} />
+          <${Stat} label="粗利率" value=${amount > 0 ? pct(margin / amount) : '—'} />
+          <${Stat} label="販売した重さ" value=${fmtKg(sum(monthSales, d.saleGrams))} />
+        </div>
+      </section>
+      <div className="two-col">
+        <section className="panel">
+          <div className="panel-head"><h2 className="panel-title">焙煎豆の在庫</h2><button type="button" className="link" onClick=${() => nav('coffees')}>銘柄・商品</button></div>
+          <ul className="rows">${coffees.map(c => {
+            const rem = d.coffeeRemain(c.id);
+            const oldest = d.oldestStock(c.id);
+            const latest = d.latestRoastOf(c.id);
+            const packs = d.productsOf(c.id).filter(p => p.active).sort((a, b) => b.sizeG - a.sizeG).map(p => `${p.sizeG}g×${Math.floor(Math.max(0, rem) / p.sizeG)}`).join('・');
+            return html`<li key=${c.id}><button type="button" className="row" onClick=${() => nav('coffees')}>
+              <div className="row-main">
+                <div className="row-title"><span>${c.name}</span><${LevelChip} level=${latest ? latest.level : ''} /></div>
+                <div className="row-meta">${oldest ? `いちばん古い焙煎から ${daysBetween(oldest.at.slice(0, 10), TODAY)}日` : '在庫なし'}${packs ? `・${packs}` : ''}</div>
+              </div>
+              <div className="row-side"><div className="row-num">${fmtG(rem)}</div></div>
+            </button></li>`;
+          })}</ul>
+        </section>
+        <section className="panel">
+          <div className="panel-head"><h2 className="panel-title">生豆の在庫</h2><button type="button" className="link" onClick=${() => nav('lots')}>生豆ロット</button></div>
+          <ul className="rows">${lots.map(l => {
+            const rem = d.lotRemain(l);
+            return html`<li key=${l.id}><button type="button" className="row" onClick=${() => nav('lot', { id: l.id })}>
+              <div className="row-main"><div className="row-title">${l.name}</div><div className="row-meta">仕入れ ${fmtDate(l.date)}・${yen(d.lotGPrice(l) * 1000)}/kg</div></div>
+              <div className="row-side"><div className="row-num">${fmtKg(rem)}</div><div className="row-sub">仕入れ ${fmtKg(l.weightG, 1)}</div></div>
+              <div className="row-meter"><${Meter} value=${rem} max=${l.weightG} /></div>
+            </button></li>`;
+          })}</ul>
+        </section>
+      </div>`;
+  }
+
+  /* ---------- 生豆ロット ---------- */
+  function LotList({ ctx }) {
+    const { db, d, nav } = ctx;
+    const [filter, setFilter] = useState('stock');
+    const [q, setQ] = useState('');
+    let lots = [...db.lots].sort((a, b) => b.date.localeCompare(a.date));
+    if (filter === 'stock') lots = lots.filter(l => d.lotRemain(l) > 0);
+    if (filter === 'empty') lots = lots.filter(l => d.lotRemain(l) <= 0);
+    const key = q.trim().toLowerCase();
+    if (key) lots = lots.filter(l => [l.name, l.productName, l.country, l.area, l.farm, l.variety].some(v => (v || '').toLowerCase().includes(key)));
+    return html`
+      <${PageHead} title="生豆ロット" eyebrow="在庫"><button type="button" className="btn btn-primary" onClick=${() => nav('lotForm')}>仕入れを登録</button></${PageHead}>
+      <div className="toolbar">
+        <${Seg} label="表示するロット" value=${filter} onChange=${setFilter} options=${[['stock', '在庫あり'], ['empty', '使い切り'], ['all', 'すべて']]} />
+        <label className="sr-only" htmlFor="lot-search">ロットを探す</label>
+        <input id="lot-search" className="input search" type="search" placeholder="名前・国・品種で探す" value=${q} onChange=${e => setQ(e.target.value)} />
+      </div>
+      <div className="panel">
+        ${lots.length === 0 ? html`<p className="empty">該当するロットはありません。</p>` : html`<ul className="rows">${lots.map(l => {
+          const rem = d.lotRemain(l);
+          const sup = d.suppliers.get(l.supplierId);
+          return html`<li key=${l.id}><button type="button" className="row" onClick=${() => nav('lot', { id: l.id })}>
+            <div className="row-main">
+              <div className="row-title"><span>${l.name}</span>${l.rank ? html`<span className="chip">${l.rank}</span>` : null}</div>
+              <div className="row-meta">${[sup ? sup.name : '', l.country, l.process, `仕入れ ${fmtDate(l.date)}`].filter(Boolean).join('・')}</div>
+            </div>
+            <div className="row-side"><div className="row-num">${rem > 0 ? fmtKg(rem) : '使い切り'}</div><div className="row-sub">${yen(d.lotGPrice(l) * 1000)}/kg</div></div>
+            <div className="row-meter"><${Meter} value=${rem} max=${l.weightG} /></div>
+          </button></li>`;
+        })}</ul>`}
+      </div>`;
+  }
+
+  function AdjHistory({ ctx, list }) {
+    const rows = list.slice().sort((a, b) => b.date.localeCompare(a.date));
+    return html`<section className="panel">
+      <div className="panel-head"><h2 className="panel-title">在庫調整の履歴</h2><span className="muted">${rows.length}件</span></div>
+      ${rows.length === 0 ? html`<p className="empty">在庫調整はありません。</p>` : html`<div className="table-wrap"><table className="data">
+        <thead><tr><th>日付</th><th className="r">増減</th><th>理由</th><th>メモ</th></tr></thead>
+        <tbody>${rows.map(a => html`<tr key=${a.id}><td className="nw">${fmtDate(a.date)}</td><td className="r">${signedG(a.deltaG)}</td><td className="nw">${a.reason}</td><td>${a.memo}</td></tr>`)}</tbody>
+      </table></div>`}
+    </section>`;
+  }
+
+  function LotDetail({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const lot = d.lots.get(params.id);
+    if (!lot) return html`<${NotFound} ctx=${ctx} to="lots" label="生豆ロット" />`;
+    const used = d.lotUsed.get(lot.id) || 0, adj = d.lotAdj.get(lot.id) || 0, rem = d.lotRemain(lot);
+    const roasts = db.roasts.filter(r => r.lotId === lot.id).sort((a, b) => b.at.localeCompare(a.at));
+    const adjs = db.adjustments.filter(a => a.kind === 'lot' && a.targetId === lot.id);
+    const sup = d.suppliers.get(lot.supplierId);
+    const remove = () => { commit(n => { n.lots = n.lots.filter(x => x.id !== lot.id); }); notify('ロットを削除しました'); nav('lots'); };
+    return html`
+      <${PageHead} back=${{ label: '生豆ロット', go: () => nav('lots') }} eyebrow=${`仕入れ ${fmtDate(lot.date)}・${sup ? sup.name : ''}`} title=${lot.name}>
+        <button type="button" className="btn" onClick=${() => nav('lotForm', { id: lot.id })}>編集</button>
+        <button type="button" className="btn" onClick=${() => nav('lotForm', { copyFrom: lot.id })}>この豆をまた仕入れる</button>
+        <button type="button" className="btn" onClick=${() => nav('adjust', { preset: { kind: 'lot', targetId: lot.id } })}>在庫調整</button>
+      </${PageHead}>
+      <div className="chips">
+        ${[lot.country, lot.process, lot.rank].filter(Boolean).map(t => html`<span className="chip" key=${t}>${t}</span>`)}
+        ${rem <= 0 ? html`<span className="chip chip-off">使い切り</span>` : null}
+      </div>
+      <section className="panel panel-pad">
+        <div className="stock-head">
+          <div><div className="stat-label">残量</div><div className="big">${fmtKg(rem)}</div><div className="muted small">${fmtG(rem)}（仕入れ ${fmtG(lot.weightG)}）</div></div>
+          <div><div className="stat-label">kg 単価（税抜）</div><div className="big">${yen(d.lotGPrice(lot) * 1000)}</div><div className="muted small">（仕入れ値 ${yen(lot.price)} ＋ 送料など ${yen(lot.shipping || 0)}）÷ ${fmtKg(lot.weightG, 1)}</div></div>
+        </div>
+        <${Meter} value=${rem} max=${lot.weightG} />
+        <dl className="calc-list">
+          <div><dt>仕入れ重量</dt><dd>${fmtG(lot.weightG)}</dd></div>
+          <div><dt>焙煎に使った量（投入量＋ハンドピック）</dt><dd>− ${fmtG(used)}</dd></div>
+          <div><dt>在庫調整</dt><dd>${signedG(adj)}</dd></div>
+          <div className="total"><dt>残量</dt><dd>${fmtG(rem)}</dd></div>
+        </dl>
+      </section>
+      <div className="two-col">
+        <section className="panel panel-pad">
+          <h2 className="panel-title">産地</h2>
+          <${KV} rows=${[['国', lot.country], ['エリア', lot.area], ['農園名', lot.farm], ['生産者', lot.producer], ['品種', lot.variety], ['生産処理', lot.process], ['標高', lot.altitude], ['収穫年度', lot.cropYear], ['等級', lot.grade]]} />
+        </section>
+        <section className="panel panel-pad">
+          <h2 className="panel-title">問屋の情報</h2>
+          <${KV} rows=${[['ランク', lot.rank], ['カッピングプロファイル', lot.cuppingProfile], ['カッピングスコア', lot.cuppingScore], ['認証・受賞', (lot.certs || []).join('、')], ['包装', lot.packaging], ['商品説明・備考', lot.description]]} />
+        </section>
+      </div>
+      <section className="panel panel-pad">
+        <h2 className="panel-title">基本</h2>
+        <${KV} rows=${[['問屋', sup ? sup.name : ''], ['問屋の商品名', lot.productName], ['英文名', lot.englishName], ['商品コード', lot.code], ['商品ページ', lot.url ? html`<a href=${lot.url} target="_blank" rel="noopener noreferrer">${lot.url}</a>` : ''], ['仕入れ値（税抜）', yen(lot.price)], ['送料などの経費（税抜）', yen(lot.shipping || 0)], ['メモ', lot.memo]]} />
+      </section>
+      <section className="panel">
+        <div className="panel-head"><h2 className="panel-title">このロットの焙煎記録</h2><span className="muted">${roasts.length}件</span></div>
+        ${roasts.length === 0 ? html`<p className="empty">まだ焙煎記録はありません。</p>` : html`<div className="table-wrap"><table className="data">
+          <thead><tr><th>焙煎日</th><th>銘柄</th><th className="r">投入量</th><th className="r">焙煎後</th><th className="r">ロス率</th><th className="r">焙煎時間</th><th>焙煎度</th></tr></thead>
+          <tbody>${roasts.map(r => { const c = d.coffees.get(r.coffeeId); return html`<tr key=${r.id} className="is-link" onClick=${() => nav('roast', { id: r.id })}>
+            <td className="nw"><button type="button" className="cell-link" onClick=${e => { e.stopPropagation(); nav('roast', { id: r.id }); }}>${fmtDate(r.at.slice(0, 10))}</button></td>
+            <td>${c ? c.name : '—'}</td><td className="r">${fmtG(r.inputG)}</td><td className="r">${fmtG(r.outputG)}</td><td className="r">${pct((r.inputG - r.outputG) / r.inputG)}</td><td className="r mono">${mmss(r.totalSec)}</td><td className="nw">${r.level || '—'}</td>
+          </tr>`; })}</tbody>
+        </table></div>`}
+      </section>
+      <${AdjHistory} ctx=${ctx} list=${adjs} />
+      ${roasts.length === 0 && adjs.length === 0 ? html`<div className="danger-zone"><${ConfirmButton} label="このロットを削除" confirmLabel="もう一度押すと削除します" onConfirm=${remove} /></div>` : null}`;
+  }
+
+  const LOT_TEXT = ['name', 'date', 'supplierId', 'productName', 'englishName', 'code', 'url', 'country', 'area', 'farm', 'producer', 'variety', 'process', 'altitude', 'cropYear', 'grade', 'rank', 'cuppingProfile', 'cuppingScore', 'packaging', 'description', 'memo'];
+  function lotToForm(l) {
+    const f = {};
+    for (const k of LOT_TEXT) f[k] = l[k] == null ? '' : String(l[k]);
+    return { ...f, certs: [...(l.certs || [])], weightKg: String(l.weightG / 1000), price: String(l.price), shipping: l.shipping ? String(l.shipping) : '', newSupplier: '' };
+  }
+  const copyLotForm = l => ({ ...lotToForm(l), date: TODAY, weightKg: '', price: '', shipping: '', memo: '' });
+  function emptyLotForm(db) {
+    const f = {};
+    for (const k of LOT_TEXT) f[k] = '';
+    return { ...f, date: TODAY, supplierId: db.suppliers[0] ? db.suppliers[0].id : '', certs: [], weightKg: '', price: '', shipping: '', newSupplier: '' };
+  }
+
+  function LotForm({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const editing = params.id ? d.lots.get(params.id) : null;
+    const copySource = params.copyFrom ? d.lots.get(params.copyFrom) : null;
+    const [f, setF] = useState(() => editing ? lotToForm(editing) : copySource ? copyLotForm(copySource) : emptyLotForm(db));
+    const [copyId, setCopyId] = useState('');
+    const [errors, setErrors] = useState([]);
+    const errRef = useRef(null);
+    useScrollTo(errors, errRef);
+    if (params.id && !editing) return html`<${NotFound} ctx=${ctx} to="lots" label="生豆ロット" />`;
+
+    const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+    const bind = k => ({ id: `lot-${k}`, value: f[k], onChange: e => set(k, e.target.value) });
+    const kgN = parseNum(f.weightKg);
+    const weightG = Number.isFinite(kgN) ? Math.round(kgN * 1000) : NaN;
+    const price = parseNum(f.price);
+    const ship = isBlank(f.shipping) ? 0 : parseNum(f.shipping);
+    const kgPrice = weightG > 0 && Number.isFinite(price) && Number.isFinite(ship) ? (price + ship) / weightG * 1000 : NaN;
+    const usedNet = editing ? (d.lotUsed.get(editing.id) || 0) - (d.lotAdj.get(editing.id) || 0) : 0;
+    const suggestions = k => [...new Set(db.lots.map(l => l[k]).filter(v => !isBlank(v)))];
+
+    const applyCopy = () => {
+      const src = d.lots.get(copyId);
+      if (!src) return;
+      setF(p => ({ ...copyLotForm(src), date: p.date, weightKg: p.weightKg, price: p.price, shipping: p.shipping, memo: p.memo }));
+      notify(`「${src.name}」の産地・問屋の情報をコピーしました`);
+    };
+    const save = () => {
+      const errs = [];
+      if (isBlank(f.name)) errs.push('ロット名を入力してください。');
+      if (isBlank(f.date)) errs.push('仕入れ日を入力してください。');
+      if (f.supplierId === NEW ? isBlank(f.newSupplier) : !d.suppliers.get(f.supplierId)) errs.push('問屋を選ぶか、新しい問屋の名前を入力してください。');
+      if (isBlank(f.country)) errs.push('国を入力してください。');
+      if (!(weightG > 0)) errs.push('仕入れ重量を kg で入力してください（例：5、2.5）。');
+      if (!(Number.isFinite(price) && price >= 0)) errs.push('仕入れ値（税抜）を円で入力してください。');
+      if (!(Number.isFinite(ship) && ship >= 0)) errs.push('送料などの経費は、0 以上の数字で入力してください。');
+      if (!isBlank(f.cuppingScore) && !Number.isFinite(parseNum(f.cuppingScore))) errs.push('カッピングスコアは数字で入力してください。');
+      if (editing && weightG > 0 && weightG < usedNet) errs.push(`このロットはすでに ${fmtG(usedNet)} 使っているため、仕入れ重量を ${fmtKg(usedNet, 3)} より少なくできません。`);
+      setErrors(errs);
+      if (errs.length) return;
+      const id = editing ? editing.id : uid('l');
+      const newSup = f.supplierId === NEW ? { id: uid('s'), name: f.newSupplier.trim() } : null;
+      const rec = {};
+      for (const k of LOT_TEXT) rec[k] = String(f[k]).trim();
+      Object.assign(rec, { id, supplierId: newSup ? newSup.id : f.supplierId, certs: f.certs, weightG, price, shipping: ship });
+      commit(n => {
+        if (newSup) n.suppliers.push(newSup);
+        if (editing) n.lots = n.lots.map(x => (x.id === id ? rec : x)); else n.lots.push(rec);
+      });
+      notify(editing ? 'ロットを保存しました' : '仕入れを登録しました');
+      nav('lot', { id });
+    };
+    const Text = (k, label, o = {}) => html`<${Field} label=${label} req=${o.req} hint=${o.hint} htmlFor=${`lot-${k}`} wide=${o.wide}>
+      <input className="input" autoComplete="off" placeholder=${o.ph || ''} list=${o.list ? `dl-${k}` : undefined} ...${bind(k)} />
+      ${o.list ? html`<datalist id=${`dl-${k}`}>${suggestions(k).map(v => html`<option key=${v} value=${v} />`)}</datalist>` : null}
+    </${Field}>`;
+    const cancel = () => (editing ? nav('lot', { id: editing.id }) : nav('lots'));
+
+    return html`
+      <${PageHead} back=${{ label: editing ? editing.name : '生豆ロット', go: cancel }} eyebrow=${copySource ? `「${copySource.name}」をコピーして登録` : '生豆ロット'} title=${editing ? 'ロットを編集' : '仕入れを登録'} />
+      <div className="form form-narrow">
+        <${ErrorList} errors=${errors} innerRef=${errRef} />
+        ${editing ? null : html`<section className="form-section">
+          <div className="form-section-head"><h2 className="panel-title">前のロットからコピー</h2><span className="muted small">同じ豆をまた仕入れたとき</span></div>
+          <div className="inline-add">
+            <label className="sr-only" htmlFor="lot-copy-from">コピー元のロット</label>
+            <select id="lot-copy-from" className="select" value=${copyId} onChange=${e => setCopyId(e.target.value)}>
+              <option value="">コピー元のロットを選ぶ</option>
+              ${[...db.lots].sort((a, b) => b.date.localeCompare(a.date)).map(l => html`<option key=${l.id} value=${l.id}>${l.name}（${fmtDate(l.date)}）</option>`)}
+            </select>
+            <button type="button" className="btn" disabled=${!copyId} onClick=${applyCopy}>コピーする</button>
+          </div>
+          <p className="hint">産地と問屋の情報をコピーします。仕入れ日・重量・金額・メモはコピーしません。</p>
+        </section>`}
+        <section className="form-section">
+          <h2 className="panel-title">基本</h2>
+          <div className="grid">
+            ${Text('name', 'ロット名', { req: true, wide: true, hint: '一覧や選択肢に出す短い名前です', ph: '例：コロンビア ウイラ スプレモ' })}
+            <${Field} label="仕入れ日" req htmlFor="lot-date"><input className="input" type="date" ...${bind('date')} /></${Field}>
+            <${Field} label="問屋" req htmlFor="lot-supplierId">
+              <select className="select" ...${bind('supplierId')}>
+                <option value="">選んでください</option>
+                ${db.suppliers.map(s => html`<option key=${s.id} value=${s.id}>${s.name}</option>`)}
+                <option value=${NEW}>＋ 新しい問屋を追加</option>
+              </select>
+              ${f.supplierId === NEW ? html`<input id="lot-newSupplier" className="input" placeholder="問屋名" value=${f.newSupplier} onChange=${e => set('newSupplier', e.target.value)} />` : null}
+            </${Field}>
+            ${Text('productName', '問屋の商品名', { wide: true })}
+            ${Text('englishName', '英文名')}
+            ${Text('code', '商品コード', { hint: '再注文のときに使います' })}
+            ${Text('url', '商品ページの URL', { wide: true, ph: 'https://', hint: '商品ページはあとで消えることがあるので、内容もこの画面に残します' })}
+          </div>
+        </section>
+        <section className="form-section">
+          <div className="form-section-head"><h2 className="panel-title">数量・金額</h2><span className="muted small">税抜</span></div>
+          <div className="grid grid-3">
+            <${Field} label="仕入れ重量" req htmlFor="lot-weightKg" hint=${editing && usedNet > 0 ? `使用済み ${fmtG(usedNet)}` : '例：5、2.5'}><${UnitInput} unit="kg" ...${bind('weightKg')} /></${Field}>
+            <${Field} label="仕入れ値" req htmlFor="lot-price"><${UnitInput} unit="円" inputMode="numeric" ...${bind('price')} /></${Field}>
+            <${Field} label="送料などの経費" htmlFor="lot-shipping" hint="原価に含めます"><${UnitInput} unit="円" inputMode="numeric" ...${bind('shipping')} /></${Field}>
+          </div>
+          <div className="calc">
+            <div className="calc-item"><span>kg 単価（自動計算）</span><strong>${Number.isFinite(kgPrice) ? `${yen(kgPrice)}/kg` : '—'}</strong></div>
+            <div className="calc-item"><span>g 単価</span><strong>${Number.isFinite(kgPrice) ? perG(kgPrice / 1000) : '—'}</strong></div>
+          </div>
+        </section>
+        <section className="form-section">
+          <h2 className="panel-title">産地</h2>
+          <div className="grid">
+            ${Text('country', '国', { req: true, list: true, ph: '例：コロンビア' })}
+            ${Text('area', 'エリア', { list: true, ph: '例：ウイラ県' })}
+            ${Text('farm', '農園名', { list: true, hint: '農園、ウォッシングステーションなど' })}
+            ${Text('producer', '生産者', { list: true, hint: '農園主や生産者団体の名前' })}
+            ${Text('variety', '品種', { list: true, ph: '例：カトゥーラ、ゲイシャ' })}
+            <${Field} label="生産処理（精製方法）" htmlFor="lot-process">
+              <select className="select" ...${bind('process')}><option value="">選んでください</option>${OPTIONS.processes.map(o => html`<option key=${o} value=${o}>${o}</option>`)}</select>
+            </${Field}>
+            ${Text('altitude', '標高', { ph: '例：1,650〜1,800m' })}
+            ${Text('cropYear', '収穫年度', { ph: '例：2025' })}
+            ${Text('grade', '等級', { list: true, hint: '生産国の規格による等級（G1、SHB、AA など）' })}
+          </div>
+        </section>
+        <section className="form-section">
+          <h2 className="panel-title">問屋の情報</h2>
+          <div className="grid">
+            <${Field} label="ランク" htmlFor="lot-rank" hint="問屋による格付け">
+              <select className="select" ...${bind('rank')}><option value="">選んでください</option>${OPTIONS.ranks.map(o => html`<option key=${o} value=${o}>${o}</option>`)}</select>
+            </${Field}>
+            <${Field} label="カッピングスコア" htmlFor="lot-cuppingScore"><input className="input num" inputMode="decimal" placeholder="例：86.5" ...${bind('cuppingScore')} /></${Field}>
+            <${Field} label="カッピングプロファイル" htmlFor="lot-cuppingProfile" wide hint="問屋による風味の評価"><textarea className="textarea textarea-sm" placeholder="例：オレンジ、ブラウンシュガー、ミルクチョコレート" ...${bind('cuppingProfile')}></textarea></${Field}>
+            <div className="field span-2">
+              <div className="field-label" id="lot-certs-label">認証・受賞</div>
+              <div className="checks" role="group" aria-labelledby="lot-certs-label">
+                ${OPTIONS.certs.map((o, i) => html`<label key=${o} className="check"><input id=${`lot-cert-${i}`} type="checkbox" checked=${f.certs.includes(o)} onChange=${e => { const on = e.target.checked; setF(p => ({ ...p, certs: on ? [...p.certs, o] : p.certs.filter(x => x !== o) })); }} /><span>${o}</span></label>`)}
+              </div>
+            </div>
+            ${Text('packaging', '包装', { list: true, hint: '問屋の表記のまま（例：24kg バキューム）' })}
+            <${Field} label="商品説明・備考" htmlFor="lot-description" wide hint="問屋の商品説明や備考欄を貼り付けられます"><textarea className="textarea" ...${bind('description')}></textarea></${Field}>
+          </div>
+        </section>
+        <section className="form-section">
+          <h2 className="panel-title">その他</h2>
+          <${Field} label="メモ" htmlFor="lot-memo" hint="保管場所など"><textarea className="textarea textarea-sm" ...${bind('memo')}></textarea></${Field}>
+        </section>
+        <div className="form-actions">
+          <button type="button" className="btn" onClick=${cancel}>キャンセル</button>
+          <button type="button" className="btn btn-primary" onClick=${save}>${editing ? '保存する' : '登録する'}</button>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- 焙煎記録 ---------- */
+  function RoastList({ ctx }) {
+    const { db, d, nav } = ctx;
+    const [lotF, setLotF] = useState('');
+    const [cofF, setCofF] = useState('');
+    const roasts = db.roasts.filter(r => (!lotF || r.lotId === lotF) && (!cofF || r.coffeeId === cofF)).sort((a, b) => b.at.localeCompare(a.at));
+    return html`
+      <${PageHead} title="焙煎記録" eyebrow="記録する"><button type="button" className="btn btn-primary" onClick=${() => nav('roastForm')}>焙煎を記録</button></${PageHead}>
+      <div className="toolbar">
+        <label className="sr-only" htmlFor="roast-filter-lot">生豆ロットで絞り込む</label>
+        <select id="roast-filter-lot" className="select select-auto" value=${lotF} onChange=${e => setLotF(e.target.value)}>
+          <option value="">すべての生豆ロット</option>
+          ${[...db.lots].sort((a, b) => b.date.localeCompare(a.date)).map(l => html`<option key=${l.id} value=${l.id}>${l.name}</option>`)}
+        </select>
+        <label className="sr-only" htmlFor="roast-filter-coffee">銘柄で絞り込む</label>
+        <select id="roast-filter-coffee" className="select select-auto" value=${cofF} onChange=${e => setCofF(e.target.value)}>
+          <option value="">すべての銘柄</option>
+          ${db.coffees.map(c => html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+        </select>
+      </div>
+      <div className="panel">
+        ${roasts.length === 0 ? html`<p className="empty">該当する焙煎記録はありません。</p>` : html`<ul className="rows">${roasts.map(r => {
+          const c = d.coffees.get(r.coffeeId), l = d.lots.get(r.lotId);
+          return html`<li key=${r.id}><button type="button" className="row" onClick=${() => nav('roast', { id: r.id })}>
+            <div className="row-main">
+              <div className="row-title"><span>${c ? c.name : '—'}</span><${LevelChip} level=${r.level} />${r.notes ? null : html`<span className="chip chip-warn">特徴 未記入</span>`}</div>
+              <div className="row-meta">${fmtDT(r.at)}・${l ? l.name : ''}</div>
+            </div>
+            <div className="row-side"><div className="row-num">${fmtInt(r.inputG)} → ${fmtG(r.outputG)}</div><div className="row-sub">ロス ${pct((r.inputG - r.outputG) / r.inputG)}・<span className="mono">${mmss(r.totalSec)}</span></div></div>
+          </button></li>`;
+        })}</ul>`}
+      </div>`;
+  }
+
+  function RoastTimeline({ r }) {
+    const T = r.totalSec;
+    if (!(T > 0)) return null;
+    const pos = s => `${(s / T) * 100}%`;
+    const dev = r.fcSec != null ? T - r.fcSec : null;
+    return html`<div>
+      <div className="tl" aria-hidden="true">
+        <div className="tl-track">${r.fcSec != null ? html`<div className="tl-dev" style=${{ left: pos(r.fcSec) }}></div>` : null}</div>
+        ${r.fcSec != null ? html`<div className="tl-mark" style=${{ left: pos(r.fcSec) }}></div>` : null}
+        ${r.scSec != null ? html`<div className="tl-mark tl-mark-2" style=${{ left: pos(r.scSec) }}></div>` : null}
+      </div>
+      <div className="tl-legend">
+        <span><i className="key key-dry"></i>投入〜1ハゼ <span className="mono">${mmss(r.fcSec)}</span></span>
+        ${dev != null ? html`<span><i className="key key-dev"></i>1ハゼ後 <span className="mono">${mmss(dev)}</span>（${pct(dev / T)}）</span>` : null}
+        ${r.scSec != null ? html`<span><i className="key key-mark"></i>2ハゼ開始 <span className="mono">${mmss(r.scSec)}</span></span>` : null}
+        <span>排出 <span className="mono">${mmss(T)}</span></span>
+      </div>
+    </div>`;
+  }
+
+  function RoastDetail({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const r = d.roasts.get(params.id);
+    if (!r) return html`<${NotFound} ctx=${ctx} to="roasts" label="焙煎記録" />`;
+    const c = d.coffees.get(r.coffeeId), l = d.lots.get(r.lotId);
+    const dev = r.fcSec != null ? r.totalSec - r.fcSec : null;
+    const alloc = d.roastAlloc.get(r.id) || 0, adj = d.roastAdj.get(r.id) || 0, rem = d.roastRemain(r);
+    const uses = (d.roastSales.get(r.id) || []).slice().sort((a, b) => b.sale.date.localeCompare(a.sale.date));
+    const adjs = db.adjustments.filter(a => a.kind === 'roast' && a.targetId === r.id);
+    const remove = () => { commit(n => { n.roasts = n.roasts.filter(x => x.id !== r.id); }); notify('焙煎記録を削除しました。生豆ロットの残量を戻しました'); nav('roasts'); };
+    return html`
+      <${PageHead} back=${{ label: '焙煎記録', go: () => nav('roasts') }} eyebrow=${`${fmtDT(r.at)}・${r.roaster || '焙煎機 未入力'}`} title=${c ? c.name : '焙煎記録'}>
+        <button type="button" className=${cx('btn', !r.notes && 'btn-primary')} onClick=${() => nav('roastForm', { id: r.id })}>${r.notes ? '編集' : '特徴を書く・編集'}</button>
+        <button type="button" className="btn" onClick=${() => nav('adjust', { preset: { kind: 'roast', targetId: r.id } })}>在庫調整</button>
+      </${PageHead}>
+      <div className="chips">
+        <${LevelChip} level=${r.level} />
+        ${l ? html`<button type="button" className="chip chip-link" onClick=${() => nav('lot', { id: l.id })}>生豆ロット：${l.name}</button>` : null}
+      </div>
+      <section className="panel panel-pad">
+        <h2 className="panel-title">重量</h2>
+        <div className="figs">
+          <${Fig} label="投入量" value=${fmtG(r.inputG)} />
+          <${Fig} label="ハンドピックで除いた量" value=${fmtG(r.handpickG || 0)} />
+          <${Fig} label="焙煎後重量" value=${fmtG(r.outputG)} />
+          <${Fig} label="ロス率" value=${pct((r.inputG - r.outputG) / r.inputG)} note="（投入量 − 焙煎後重量）÷ 投入量" />
+        </div>
+      </section>
+      <section className="panel panel-pad">
+        <h2 className="panel-title">プロファイル</h2>
+        <div className="figs">
+          <${Fig} label="焙煎時間" value=${html`<span className="mono">${mmss(r.totalSec)}</span>`} note="投入から排出まで" />
+          <${Fig} label="1ハゼ開始" value=${html`<span className="mono">${mmss(r.fcSec)}</span>`} />
+          <${Fig} label="2ハゼ開始" value=${html`<span className="mono">${mmss(r.scSec)}</span>`} />
+          <${Fig} label="1ハゼ後の時間" value=${html`<span className="mono">${mmss(dev)}</span>`} note=${dev != null ? `焙煎時間の ${pct(dev / r.totalSec)}（DTR）` : ''} />
+        </div>
+        <${RoastTimeline} r=${r} />
+        <${KV} rows=${[['焙煎度', r.level], ['火力・操作のメモ', r.heatMemo], ['メモ', r.memo]]} />
+      </section>
+      <div className="two-col">
+        <section className="panel panel-pad">
+          <h2 className="panel-title">焙煎後の特徴</h2>
+          ${r.notes || r.rating ? html`<${KV} rows=${[['特徴', r.notes], ['評価', html`<${RatingText} value=${r.rating} />`], ['試飲日', r.tastedOn ? fmtDate(r.tastedOn) : '']]} />` : html`<p className="muted">まだ書いていません。試飲したら「特徴を書く・編集」から書き足せます。</p>`}
+        </section>
+        <section className="panel panel-pad">
+          <h2 className="panel-title">原価と在庫</h2>
+          <dl className="calc-list">
+            <div><dt>生豆使用量（投入量＋ハンドピック）</dt><dd>${fmtG(d.roastUse(r))}</dd></div>
+            <div><dt>生豆の g 単価</dt><dd>${l ? perG(d.lotGPrice(l)) : '—'}</dd></div>
+            <div className="total"><dt>原価（税抜）</dt><dd>${yen(d.roastCost(r))}</dd></div>
+            <div><dt>1g あたり原価</dt><dd>${perG(d.roastGCost(r))}</dd></div>
+          </dl>
+          <dl className="calc-list">
+            <div><dt>焙煎後重量</dt><dd>${fmtG(r.outputG)}</dd></div>
+            <div><dt>販売で出た量</dt><dd>− ${fmtG(alloc)}</dd></div>
+            <div><dt>在庫調整</dt><dd>${signedG(adj)}</dd></div>
+            <div className="total"><dt>残量</dt><dd>${fmtG(rem)}</dd></div>
+          </dl>
+        </section>
+      </div>
+      <section className="panel">
+        <div className="panel-head"><h2 className="panel-title">この焙煎の豆を出した販売</h2><span className="muted">${uses.length}件</span></div>
+        ${uses.length === 0 ? html`<p className="empty">まだ販売に使われていません。</p>` : html`<div className="table-wrap"><table className="data">
+          <thead><tr><th>販売日</th><th>商品</th><th>チャネル</th><th className="r">重さ</th></tr></thead>
+          <tbody>${uses.map((u, i) => html`<tr key=${i} className="is-link" onClick=${() => nav('sale', { id: u.sale.id })}>
+            <td className="nw"><button type="button" className="cell-link" onClick=${e => { e.stopPropagation(); nav('sale', { id: u.sale.id }); }}>${fmtDate(u.sale.date)}</button></td>
+            <td>${d.productLabel(d.products.get(u.item.productId))}×${u.item.qty}</td><td className="nw">${u.sale.channel}</td><td className="r">${fmtG(u.g)}</td>
+          </tr>`)}</tbody>
+        </table></div>`}
+      </section>
+      ${adjs.length ? html`<${AdjHistory} ctx=${ctx} list=${adjs} />` : null}
+      ${uses.length === 0 && adjs.length === 0 ? html`<div className="danger-zone"><${ConfirmButton} label="この焙煎記録を削除" confirmLabel="もう一度押すと削除します" onConfirm=${remove} /></div>` : null}`;
+  }
+
+  function roastToForm(r) {
+    const ms = s => (s == null ? ['', ''] : [String(Math.floor(s / 60)), String(s % 60)]);
+    const [totalM, totalS] = ms(r.totalSec), [fcM, fcS] = ms(r.fcSec), [scM, scS] = ms(r.scSec);
+    return { at: r.at, lotId: r.lotId, coffeeId: r.coffeeId, newCoffee: '', roaster: r.roaster || '', inputG: String(r.inputG), handpickG: String(r.handpickG || 0), outputG: String(r.outputG), totalM, totalS, fcM, fcS, scM, scS, heatMemo: r.heatMemo || '', level: r.level || '', memo: r.memo || '', notes: r.notes || '', rating: r.rating || 0, tastedOn: r.tastedOn || '' };
+  }
+  const latestOfLot = (db, lotId) => db.roasts.filter(r => r.lotId === lotId).sort((a, b) => b.at.localeCompare(a.at))[0] || null;
+  function newRoastForm(db, d) {
+    const lot = db.lots.filter(l => d.lotRemain(l) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+    const last = lot ? latestOfLot(db, lot.id) : null;
+    return { at: nowLocal(), lotId: lot ? lot.id : '', coffeeId: last ? last.coffeeId : '', newCoffee: '', roaster: '手回し焙煎機', inputG: '', handpickG: '0', outputG: '', totalM: '', totalS: '', fcM: '', fcS: '', scM: '', scS: '', heatMemo: '', level: last && last.level ? last.level : '', memo: '', notes: '', rating: 0, tastedOn: '' };
+  }
+  function MinSec({ idBase, label, m, s, onM, onS }) {
+    return html`<div className="minsec" role="group" aria-label=${label}>
+      <input id=${`${idBase}-m`} className="input" inputMode="numeric" autoComplete="off" placeholder="分" aria-label=${`${label}（分）`} value=${m} onChange=${e => onM(e.target.value)} />
+      <span className="minsec-colon" aria-hidden="true">:</span>
+      <input id=${`${idBase}-s`} className="input" inputMode="numeric" autoComplete="off" placeholder="秒" aria-label=${`${label}（秒）`} value=${s} onChange=${e => onS(e.target.value)} />
+    </div>`;
+  }
+  function LevelPicker({ value, onChange }) {
+    return html`<div className="levels" role="group" aria-labelledby="roast-level-label">
+      ${LEVELS.map((l, i) => html`<button key=${l.key} id=${`roast-level-${i}`} type="button" className="level" aria-pressed=${value === l.key} onClick=${() => onChange(value === l.key ? '' : l.key)}><span className="bean" style=${{ background: l.color }}></span><span>${l.key}</span></button>`)}
+    </div>`;
+  }
+  function RatingPicker({ value, onChange }) {
+    return html`<div className="stars" role="group" aria-label="評価">
+      ${[1, 2, 3, 4, 5].map(n => html`<button key=${n} id=${`roast-rating-${n}`} type="button" className=${cx('star', n <= value && 'is-on')} aria-label=${`${n} / 5`} aria-pressed=${value === n} onClick=${() => onChange(value === n ? 0 : n)}>★</button>`)}
+      <span className="muted">${value ? `${value} / 5` : '未評価'}</span>
+    </div>`;
+  }
+  function PrevRoast({ d, prev }) {
+    if (!prev) return html`<p className="muted small prev-body">このロットの焙煎記録はまだありません。</p>`;
+    const c = d.coffees.get(prev.coffeeId);
+    const dev = prev.fcSec != null ? prev.totalSec - prev.fcSec : null;
+    return html`<div className="prev-body">
+      <div className="muted small">${fmtDT(prev.at)}・${c ? c.name : ''}</div>
+      <dl className="calc-list small">
+        <div><dt>投入量 → 焙煎後</dt><dd>${fmtInt(prev.inputG)} → ${fmtG(prev.outputG)}</dd></div>
+        <div><dt>ハンドピック</dt><dd>${fmtG(prev.handpickG || 0)}</dd></div>
+        <div><dt>ロス率</dt><dd>${pct((prev.inputG - prev.outputG) / prev.inputG)}</dd></div>
+        <div><dt>焙煎時間</dt><dd className="mono">${mmss(prev.totalSec)}</dd></div>
+        <div><dt>1ハゼ開始</dt><dd className="mono">${mmss(prev.fcSec)}</dd></div>
+        <div><dt>1ハゼ後</dt><dd><span className="mono">${mmss(dev)}</span>${dev != null ? `（${pct(dev / prev.totalSec)}）` : ''}</dd></div>
+        <div><dt>焙煎度</dt><dd>${prev.level || '—'}</dd></div>
+      </dl>
+      ${prev.heatMemo ? html`<p className="small"><span className="muted">火力・操作：</span>${prev.heatMemo}</p>` : null}
+      ${prev.notes ? html`<p className="small"><span className="muted">特徴：</span>${prev.notes}</p>` : null}
+    </div>`;
+  }
+
+  function RoastForm({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const editing = params.id ? d.roasts.get(params.id) : null;
+    const [f, setF] = useState(() => (editing ? roastToForm(editing) : newRoastForm(db, d)));
+    const [errors, setErrors] = useState([]);
+    const [lossAsk, setLossAsk] = useState(false);
+    const errRef = useRef(null), warnRef = useRef(null);
+    useScrollTo(errors, errRef);
+    useScrollTo(lossAsk, warnRef);
+    if (params.id && !editing) return html`<${NotFound} ctx=${ctx} to="roasts" label="焙煎記録" />`;
+
+    const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+    const bind = k => ({ id: `roast-${k}`, value: f[k], onChange: e => set(k, e.target.value) });
+    const onLot = v => setF(p => {
+      const next = { ...p, lotId: v };
+      if (!editing) { const last = latestOfLot(db, v); if (last) { next.coffeeId = last.coffeeId; if (last.level) next.level = last.level; } }
+      return next;
+    });
+    const lot = d.lots.get(f.lotId);
+    const input = parseNum(f.inputG);
+    const hp = isBlank(f.handpickG) ? 0 : parseNum(f.handpickG);
+    const out = parseNum(f.outputG);
+    const use = input + hp;
+    const loss = input > 0 && out >= 0 ? (input - out) / input : NaN;
+    const total = secOf(f.totalM, f.totalS), fc = secOf(f.fcM, f.fcS), sc = secOf(f.scM, f.scS);
+    const dev = okT(total) && okT(fc) && total > fc ? total - fc : NaN;
+    const avail = lot ? d.lotRemain(lot) + (editing && editing.lotId === lot.id ? d.roastUse(editing) : 0) : NaN;
+    const cost = lot && use > 0 ? use * d.lotGPrice(lot) : NaN;
+    const gCost = out > 0 ? cost / out : NaN;
+    const lossOut = Number.isFinite(loss) && (loss < 0.05 || loss > 0.30);
+    const allocated = editing ? (d.roastAlloc.get(editing.id) || 0) : 0;
+    const adjG = editing ? (d.roastAdj.get(editing.id) || 0) : 0;
+    const lockedCoffee = !!editing && allocated > 0;
+    const prev = lot ? db.roasts.filter(r => r.lotId === lot.id && (!editing || (r.id !== editing.id && r.at < editing.at))).sort((a, b) => b.at.localeCompare(a.at))[0] : null;
+    const lotOptions = db.lots.filter(l => d.lotRemain(l) > 0 || (editing && l.id === editing.lotId)).sort((a, b) => b.date.localeCompare(a.date));
+    const coffeeOptions = db.coffees.filter(c => c.active || (editing && c.id === editing.coffeeId));
+    const cancel = () => (editing ? nav('roast', { id: editing.id }) : nav('roasts'));
+
+    const save = force => {
+      const errs = [];
+      if (isBlank(f.at)) errs.push('焙煎日時を入力してください。');
+      if (!lot) errs.push('生豆ロットを選んでください。');
+      if (f.coffeeId === NEW ? isBlank(f.newCoffee) : !d.coffees.get(f.coffeeId)) errs.push('銘柄を選ぶか、新しい銘柄の名前を入力してください。');
+      if (!(Number.isInteger(input) && input > 0)) errs.push('投入量を g の整数で入力してください。');
+      if (!(Number.isInteger(hp) && hp >= 0)) errs.push('ハンドピックで除いた量は、0 以上の整数（g）で入力してください。');
+      if (!(Number.isInteger(out) && out > 0)) errs.push('焙煎後重量を g の整数で入力してください。');
+      else if (Number.isInteger(input) && out >= input) errs.push('焙煎後重量は、投入量より少なくしてください。');
+      if (lot && Number.isInteger(input) && Number.isInteger(hp) && use > avail) errs.push(`生豆ロットの残り（${fmtG(avail)}）より多く使っています。投入量とハンドピックの合計は ${fmtG(use)} です。`);
+      if (!okT(total)) errs.push(total === null ? '焙煎時間（投入から排出まで）を入力してください。' : '焙煎時間は、分と秒を整数で入力してください（秒は 0〜59）。');
+      if (Number.isNaN(fc)) errs.push('1ハゼ開始は、分と秒を整数で入力してください（秒は 0〜59）。');
+      if (Number.isNaN(sc)) errs.push('2ハゼ開始は、分と秒を整数で入力してください（秒は 0〜59）。');
+      if (okT(total) && okT(fc) && fc >= total) errs.push('1ハゼ開始は、焙煎時間より前の時間にしてください。');
+      if (okT(total) && okT(sc) && sc >= total) errs.push('2ハゼ開始は、焙煎時間より前の時間にしてください。');
+      if (okT(fc) && okT(sc) && sc <= fc) errs.push('2ハゼ開始は、1ハゼ開始より後の時間にしてください。');
+      if (editing && Number.isInteger(out) && out - allocated + adjG < 0) errs.push(`この焙煎の豆はすでに ${fmtG(allocated - adjG)} 使われているため、焙煎後重量をそれより少なくできません。`);
+      if (lockedCoffee && f.coffeeId !== editing.coffeeId) errs.push('販売に使われた焙煎記録は、銘柄を変えられません。');
+      setErrors(errs);
+      if (errs.length) { setLossAsk(false); return; }
+      if (lossOut && !force) { setLossAsk(true); return; }
+      const id = editing ? editing.id : uid('r');
+      const newCoffee = f.coffeeId === NEW ? { id: uid('c'), name: f.newCoffee.trim(), description: '', active: true } : null;
+      const coffeeId = newCoffee ? newCoffee.id : f.coffeeId;
+      const rec = { id, at: f.at, lotId: f.lotId, coffeeId, roaster: f.roaster.trim(), inputG: input, handpickG: hp, outputG: out, totalSec: total, fcSec: okT(fc) ? fc : null, scSec: okT(sc) ? sc : null, heatMemo: f.heatMemo.trim(), level: f.level, memo: f.memo.trim(), notes: f.notes.trim(), rating: f.rating || null, tastedOn: f.tastedOn };
+      commit(n => {
+        if (newCoffee) n.coffees.push(newCoffee);
+        if (editing) n.roasts = n.roasts.map(x => (x.id === id ? rec : x)); else n.roasts.push(rec);
+      });
+      const cname = newCoffee ? newCoffee.name : (d.coffees.get(coffeeId) || {}).name;
+      notify(editing ? '焙煎記録を保存しました' : `焙煎を記録しました。${cname} の在庫が ${fmtG(out)} 増えました`);
+      nav('roast', { id });
+    };
+
+    return html`
+      <${PageHead} back=${{ label: editing ? 'この焙煎記録' : '焙煎記録', go: cancel }} eyebrow=${editing ? fmtDT(editing.at) : '焙煎記録'} title=${editing ? '焙煎記録を編集' : '焙煎を記録'} />
+      <div className="form-layout">
+        <div className="form">
+          <${ErrorList} errors=${errors} innerRef=${errRef} />
+          <section className="form-section">
+            <h2 className="panel-title">基本</h2>
+            <div className="grid">
+              <${Field} label="生豆ロット" req wide htmlFor="roast-lotId" hint=${lot ? `残り ${fmtG(avail)}・${yen(d.lotGPrice(lot) * 1000)}/kg（税抜）` : '残量のあるロットから選びます'}>
+                <select id="roast-lotId" className="select" value=${f.lotId} onChange=${e => onLot(e.target.value)}>
+                  <option value="">選んでください</option>
+                  ${lotOptions.map(l => html`<option key=${l.id} value=${l.id}>${l.name}（残り ${fmtKg(d.lotRemain(l))}）</option>`)}
+                </select>
+              </${Field}>
+              <${Field} label="銘柄" req wide htmlFor="roast-coffeeId" hint=${lockedCoffee ? '販売に使われているため、銘柄は変えられません。' : '同じ生豆ロットから、焙煎度を変えて別の銘柄も作れます。'}>
+                <select id="roast-coffeeId" className="select" value=${f.coffeeId} disabled=${lockedCoffee} onChange=${e => set('coffeeId', e.target.value)}>
+                  <option value="">選んでください</option>
+                  ${coffeeOptions.map(c => html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                  <option value=${NEW}>＋ 新しい銘柄を作る</option>
+                </select>
+                ${f.coffeeId === NEW ? html`<input id="roast-newCoffee" className="input" placeholder="新しい銘柄名（例：ブラジル ボア・ソルチ 深煎り）" value=${f.newCoffee} onChange=${e => set('newCoffee', e.target.value)} />` : null}
+              </${Field}>
+              <${Field} label="焙煎日時" req htmlFor="roast-at"><input className="input" type="datetime-local" ...${bind('at')} /></${Field}>
+              <${Field} label="焙煎機" htmlFor="roast-roaster"><input className="input" autoComplete="off" ...${bind('roaster')} /></${Field}>
+            </div>
+          </section>
+          <details className="prev only-mobile">
+            <summary>前回の記録（同じ生豆ロット）</summary>
+            <${PrevRoast} d=${d} prev=${prev} />
+          </details>
+          <section className="form-section">
+            <h2 className="panel-title">重量</h2>
+            <div className="grid grid-3">
+              <${Field} label="投入量" req htmlFor="roast-inputG"><${UnitInput} unit="g" inputMode="numeric" ...${bind('inputG')} /></${Field}>
+              <${Field} label="ハンドピックで除いた量" htmlFor="roast-handpickG"><${UnitInput} unit="g" inputMode="numeric" ...${bind('handpickG')} /></${Field}>
+              <${Field} label="焙煎後重量" req htmlFor="roast-outputG"><${UnitInput} unit="g" inputMode="numeric" ...${bind('outputG')} /></${Field}>
+            </div>
+            <div className="calc">
+              <div className="calc-item"><span>生豆使用量</span><strong>${Number.isFinite(use) ? fmtG(use) : '—'}</strong></div>
+              <div className="calc-item"><span>ロス率</span><strong className=${lossOut ? 'is-warn' : ''}>${pct(loss)}</strong>${lossOut ? html`<em className="calc-note">5〜30% の範囲外</em>` : null}</div>
+              <div className="calc-item"><span>原価（税抜）</span><strong>${yen(cost)}</strong></div>
+              <div className="calc-item"><span>1g あたり原価</span><strong>${perG(gCost)}</strong></div>
+            </div>
+          </section>
+          <section className="form-section">
+            <h2 className="panel-title">プロファイル</h2>
+            <div className="grid grid-3">
+              <${Field} label="焙煎時間" req htmlFor="roast-total-m" hint="投入から排出まで"><${MinSec} idBase="roast-total" label="焙煎時間" m=${f.totalM} s=${f.totalS} onM=${v => set('totalM', v)} onS=${v => set('totalS', v)} /></${Field}>
+              <${Field} label="1ハゼ開始" htmlFor="roast-fc-m" hint="投入からの時間"><${MinSec} idBase="roast-fc" label="1ハゼ開始" m=${f.fcM} s=${f.fcS} onM=${v => set('fcM', v)} onS=${v => set('fcS', v)} /></${Field}>
+              <${Field} label="2ハゼ開始" htmlFor="roast-sc-m" hint="投入からの時間"><${MinSec} idBase="roast-sc" label="2ハゼ開始" m=${f.scM} s=${f.scS} onM=${v => set('scM', v)} onS=${v => set('scS', v)} /></${Field}>
+            </div>
+            <div className="calc">
+              <div className="calc-item"><span>1ハゼ後の時間</span><strong className="mono">${mmss(dev)}</strong></div>
+              <div className="calc-item"><span>1ハゼ後の割合（DTR）</span><strong>${Number.isFinite(dev) ? pct(dev / total) : '—'}</strong></div>
+            </div>
+            <div className="field"><div className="field-label" id="roast-level-label">焙煎度</div><${LevelPicker} value=${f.level} onChange=${v => set('level', v)} /></div>
+            <${Field} label="火力・操作のメモ" htmlFor="roast-heatMemo"><textarea className="textarea textarea-sm" placeholder="例：強火で投入、1ハゼで中火" ...${bind('heatMemo')}></textarea></${Field}>
+            <${Field} label="メモ" htmlFor="roast-memo" hint="気温・天気・反省点など"><textarea className="textarea textarea-sm" ...${bind('memo')}></textarea></${Field}>
+          </section>
+          <section className="form-section">
+            <div className="form-section-head"><h2 className="panel-title">焙煎後の特徴</h2><span className="muted small">試飲したあとで書き足せます</span></div>
+            <${Field} label="特徴" htmlFor="roast-notes"><textarea className="textarea" placeholder="香りや味の特徴" ...${bind('notes')}></textarea></${Field}>
+            <div className="grid">
+              <div className="field"><div className="field-label">評価</div><${RatingPicker} value=${f.rating} onChange=${v => set('rating', v)} /></div>
+              <${Field} label="試飲日" htmlFor="roast-tastedOn"><input className="input" type="date" ...${bind('tastedOn')} /></${Field}>
+            </div>
+          </section>
+          ${lossAsk && lossOut ? html`<div className="alert alert-warn" role="alert" ref=${warnRef}>
+            <div className="alert-title">ロス率が ${pct(loss)} です</div>
+            <div>ふだんの範囲（5〜30%）から外れています。投入量と焙煎後重量に入力ミスがないか確認してください。</div>
+            <div className="alert-actions">
+              <button type="button" className="btn" onClick=${() => { setLossAsk(false); focusId('roast-outputG'); }}>数字を直す</button>
+              <button type="button" className="btn btn-primary" onClick=${() => save(true)}>このまま保存する</button>
+            </div>
+          </div>` : null}
+          <div className="form-actions">
+            <button type="button" className="btn" onClick=${cancel}>キャンセル</button>
+            <button type="button" className="btn btn-primary" onClick=${() => save(false)}>${editing ? '保存する' : '記録する'}</button>
+          </div>
+        </div>
+        <aside className="form-aside">
+          <div className="prev"><div className="prev-title">前回の記録（同じ生豆ロット）</div><${PrevRoast} d=${d} prev=${prev} /></div>
+        </aside>
+      </div>`;
+  }
+
+  /* ---------- 銘柄・商品 ---------- */
+  function CoffeeCard({ ctx, coffee }) {
+    const { d, nav, commit, notify } = ctx;
+    const [adding, setAdding] = useState(false);
+    const [pf, setPf] = useState({ sizeG: '', price: '', packCost: '' });
+    const [err, setErr] = useState('');
+    const rem = d.coffeeRemain(coffee.id);
+    const products = d.productsOf(coffee.id);
+    const stockRoasts = d.roastsOf(coffee.id).filter(r => d.roastRemain(r) > 0);
+    const latest = d.latestRoastOf(coffee.id);
+    const setP = k => e => { const v = e.target.value; setPf(p => ({ ...p, [k]: v })); };
+    const addProduct = () => {
+      const size = parseNum(pf.sizeG), price = parseNum(pf.price), pack = isBlank(pf.packCost) ? 0 : parseNum(pf.packCost);
+      if (!(Number.isInteger(size) && size > 0)) { setErr('内容量を g の整数で入力してください。'); return; }
+      if (!(Number.isFinite(price) && price >= 0)) { setErr('販売価格（税抜）を円で入力してください。'); return; }
+      if (!(Number.isFinite(pack) && pack >= 0)) { setErr('包材費は 0 以上の数字で入力してください。'); return; }
+      commit(n => { n.products.push({ id: uid('p'), coffeeId: coffee.id, sizeG: size, price, packCost: pack, active: true }); });
+      setPf({ sizeG: '', price: '', packCost: '' }); setErr(''); setAdding(false);
+      notify(`${coffee.name} に ${size}g の商品を追加しました`);
+    };
+    const toggleCoffee = () => commit(n => { const c = n.coffees.find(x => x.id === coffee.id); c.active = !c.active; });
+    const toggleProduct = pid => commit(n => { const p = n.products.find(x => x.id === pid); p.active = !p.active; });
+    return html`<section className="panel">
+      <div className="coffee-head">
+        <div className="row-main">
+          <div className="row-title"><h2 className="panel-title">${coffee.name}</h2><${LevelChip} level=${latest ? latest.level : ''} />${coffee.active ? null : html`<span className="chip chip-off">販売停止</span>`}</div>
+          <div className="row-meta">${stockRoasts.length ? `いちばん古い焙煎から ${daysBetween(stockRoasts[0].at.slice(0, 10), TODAY)}日` : '在庫なし'}${coffee.description ? `・${coffee.description}` : ''}</div>
+        </div>
+        <div className="row-side"><div className="big">${fmtG(rem)}</div><div className="row-sub">焙煎豆の残量</div></div>
+      </div>
+      <div className="table-wrap"><table className="data">
+        <thead><tr><th>内容量</th><th className="r">販売価格（税抜）</th><th className="r">包材費</th><th className="r">何個分</th><th>販売</th></tr></thead>
+        <tbody>${products.length === 0 ? html`<tr><td colSpan="5" className="muted">商品（内容量と価格）がまだありません。</td></tr>` : products.map(p => html`<tr key=${p.id}>
+          <td className="nw">${p.sizeG} g</td><td className="r">${yen(p.price)}</td><td className="r">${yen(p.packCost || 0)}</td><td className="r">${Math.floor(Math.max(0, rem) / p.sizeG)} 個</td>
+          <td><label className="switch"><input id=${`product-active-${p.id}`} type="checkbox" checked=${p.active} onChange=${() => toggleProduct(p.id)} /><span>${p.active ? '販売中' : '停止中'}</span></label></td>
+        </tr>`)}</tbody>
+      </table></div>
+      ${adding ? html`<div className="product-form">
+        <div className="grid grid-3">
+          <${Field} label="内容量" req htmlFor=${`pf-size-${coffee.id}`}><${UnitInput} unit="g" inputMode="numeric" id=${`pf-size-${coffee.id}`} value=${pf.sizeG} onChange=${setP('sizeG')} /></${Field}>
+          <${Field} label="販売価格（税抜）" req htmlFor=${`pf-price-${coffee.id}`}><${UnitInput} unit="円" inputMode="numeric" id=${`pf-price-${coffee.id}`} value=${pf.price} onChange=${setP('price')} /></${Field}>
+          <${Field} label="包材費" htmlFor=${`pf-pack-${coffee.id}`} hint="1個あたりの袋・ラベル代"><${UnitInput} unit="円" inputMode="numeric" id=${`pf-pack-${coffee.id}`} value=${pf.packCost} onChange=${setP('packCost')} /></${Field}>
+        </div>
+        ${err ? html`<div className="field-error" role="alert">${err}</div>` : null}
+        <div><button type="button" className="btn btn-primary btn-small" onClick=${addProduct}>商品を追加する</button></div>
+      </div>` : null}
+      ${stockRoasts.length ? html`<details className="roast-stock">
+        <summary>焙煎記録ごとの残量（${stockRoasts.length}件）</summary>
+        <p className="panel-note">販売すると、焙煎日の古い行から順に減ります。</p>
+        <div className="table-wrap"><table className="data compact">
+          <thead><tr><th>焙煎日</th><th>生豆ロット</th><th className="r">焙煎後</th><th className="r">残量</th><th className="r">1g あたり原価</th></tr></thead>
+          <tbody>${stockRoasts.map(r => { const l = d.lots.get(r.lotId); return html`<tr key=${r.id} className="is-link" onClick=${() => nav('roast', { id: r.id })}>
+            <td className="nw"><button type="button" className="cell-link" onClick=${e => { e.stopPropagation(); nav('roast', { id: r.id }); }}>${fmtDate(r.at.slice(0, 10))}</button></td>
+            <td>${l ? l.name : '—'}</td><td className="r">${fmtG(r.outputG)}</td><td className="r">${fmtG(d.roastRemain(r))}</td><td className="r">${perG(d.roastGCost(r))}</td>
+          </tr>`; })}</tbody>
+        </table></div>
+      </details>` : null}
+      <div className="card-foot">
+        <button type="button" className="btn btn-small" onClick=${() => setAdding(!adding)}>${adding ? '追加をやめる' : '商品を追加'}</button>
+        <button type="button" className="btn btn-quiet btn-small" onClick=${toggleCoffee}>${coffee.active ? '販売をやめる' : '販売を再開する'}</button>
+      </div>
+    </section>`;
+  }
+
+  function CoffeeList({ ctx }) {
+    const { db, commit, notify } = ctx;
+    const [showAll, setShowAll] = useState(false);
+    const [name, setName] = useState('');
+    const [err, setErr] = useState('');
+    const coffees = db.coffees.filter(c => showAll || c.active);
+    const addCoffee = () => {
+      const v = name.trim();
+      if (!v) { setErr('銘柄名を入力してください。'); return; }
+      commit(n => { n.coffees.push({ id: uid('c'), name: v, description: '', active: true }); });
+      setName(''); setErr('');
+      notify(`銘柄「${v}」を追加しました。商品（内容量と価格）も追加してください`);
+    };
+    return html`
+      <${PageHead} title="銘柄・商品" eyebrow="在庫" />
+      <p className="lead">銘柄は販売する焙煎豆の種類、商品は銘柄×内容量です。在庫は銘柄ごとに g で数え、どの内容量で売っても同じ在庫から減ります。</p>
+      <div className="toolbar">
+        <${Seg} label="表示する銘柄" value=${showAll ? 'all' : 'active'} onChange=${v => setShowAll(v === 'all')} options=${[['active', '販売中'], ['all', 'すべて']]} />
+        <div className="inline-add search">
+          <label className="sr-only" htmlFor="coffee-new-name">新しい銘柄名</label>
+          <input id="coffee-new-name" className="input" placeholder="新しい銘柄名" value=${name} onChange=${e => setName(e.target.value)} />
+          <button type="button" className="btn" onClick=${addCoffee}>銘柄を追加</button>
+        </div>
+      </div>
+      ${err ? html`<div className="field-error" role="alert">${err}</div>` : null}
+      ${coffees.map(c => html`<${CoffeeCard} key=${c.id} ctx=${ctx} coffee=${c} />`)}`;
+  }
+
+  /* ---------- 販売 ---------- */
+  function SaleList({ ctx }) {
+    const { db, d, nav } = ctx;
+    const months = [...new Set(db.sales.map(s => s.date.slice(0, 7)))].sort().reverse();
+    const thisYm = TODAY.slice(0, 7);
+    const [month, setMonth] = useState(months.includes(thisYm) ? thisYm : 'all');
+    const sales = db.sales.filter(s => month === 'all' || s.date.slice(0, 7) === month).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    const amount = sum(sales, d.saleAmount), cost = sum(sales, d.saleCost);
+    return html`
+      <${PageHead} title="販売" eyebrow="記録する"><button type="button" className="btn btn-primary" onClick=${() => nav('saleForm')}>販売を記録</button></${PageHead}>
+      <div className="toolbar">
+        <label className="sr-only" htmlFor="sale-month">表示する月</label>
+        <select id="sale-month" className="select select-auto" value=${month} onChange=${e => setMonth(e.target.value)}>
+          <option value="all">すべての月</option>
+          ${months.map(m => html`<option key=${m} value=${m}>${monthLabel(m)}</option>`)}
+        </select>
+        <span className="muted small">${sales.length}件・売上 ${yen(amount)}・粗利 ${yen(amount - cost)}（税抜）</span>
+      </div>
+      <div className="panel">
+        ${sales.length === 0 ? html`<p className="empty">この月の販売はありません。</p>` : html`<ul className="rows">${sales.map(s => {
+          const a = d.saleAmount(s), c = d.saleCost(s);
+          const first = s.items[0];
+          const summary = first ? `${d.productLabel(d.products.get(first.productId))}×${first.qty}${s.items.length > 1 ? ` ほか${s.items.length - 1}件` : ''}` : '';
+          return html`<li key=${s.id}><button type="button" className="row" onClick=${() => nav('sale', { id: s.id })}>
+            <div className="row-main">
+              <div className="row-title"><span>${fmtDate(s.date)}</span><span className="chip">${s.channel}</span>${s.customer ? html`<span className="row-meta">${s.customer}</span>` : null}</div>
+              <div className="row-meta">${summary}</div>
+            </div>
+            <div className="row-side"><div className="row-num">${yen(a)}</div><div className="row-sub">粗利 ${yen(a - c)}（${pct((a - c) / a)}）</div></div>
+          </button></li>`;
+        })}</ul>`}
+      </div>`;
+  }
+
+  function SaleDetail({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const sale = db.sales.find(s => s.id === params.id);
+    if (!sale) return html`<${NotFound} ctx=${ctx} to="sales" label="販売" />`;
+    const amount = d.saleAmount(sale), cost = d.saleCost(sale), margin = amount - cost;
+    const remove = () => { commit(n => { n.sales = n.sales.filter(x => x.id !== sale.id); }); notify('販売を削除して、在庫を戻しました'); nav('sales'); };
+    return html`
+      <${PageHead} back=${{ label: '販売', go: () => nav('sales') }} eyebrow=${[sale.channel, sale.customer].filter(Boolean).join('・')} title=${`${fmtDate(sale.date)} の販売`}>
+        <button type="button" className="btn" onClick=${() => nav('saleForm', { id: sale.id })}>編集</button>
+        <${ConfirmButton} label="削除" confirmLabel="もう一度押すと削除します" onConfirm=${remove} />
+      </${PageHead}>
+      <div className="stats">
+        <${Stat} label="金額（税抜）" value=${yen(amount)} />
+        <${Stat} label="原価" value=${yen(cost)} />
+        <${Stat} label="粗利" value=${yen(margin)} />
+        <${Stat} label="粗利率" value=${pct(margin / amount)} />
+      </div>
+      <section className="panel">
+        <div className="panel-head"><h2 className="panel-title">明細</h2><span className="muted small">税抜</span></div>
+        <div className="table-wrap"><table className="data">
+          <thead><tr><th>商品</th><th className="r">数量</th><th className="r">単価</th><th className="r">金額</th><th className="r">原価</th><th className="r">粗利</th></tr></thead>
+          <tbody>${sale.items.map(it => { const a = d.itemAmount(it), c = d.itemCost(it); return html`<tr key=${it.id}>
+            <td>${d.productLabel(d.products.get(it.productId))}</td><td className="r">${it.qty}</td><td className="r">${yen(it.unitPrice)}</td><td className="r">${yen(a)}</td><td className="r">${yen(c)}</td><td className="r">${yen(a - c)}</td>
+          </tr>`; })}</tbody>
+          <tfoot><tr><td>合計</td><td className="r">${sum(sale.items, it => it.qty)}</td><td></td><td className="r">${yen(amount)}</td><td className="r">${yen(cost)}</td><td className="r">${yen(margin)}</td></tr></tfoot>
+        </table></div>
+      </section>
+      <section className="panel">
+        <div className="panel-head"><h2 className="panel-title">引当（どの焙煎の豆を出したか）</h2></div>
+        <p className="panel-note">焙煎日の古い順に在庫から出しています。明細の原価 ＝ 重さ × その焙煎の 1g あたり原価 ＋ 包材費 × 数量。</p>
+        <div className="table-wrap"><table className="data">
+          <thead><tr><th>商品</th><th>焙煎記録</th><th className="r">重さ</th><th className="r">1g あたり原価</th><th className="r">豆の原価</th></tr></thead>
+          <tbody>${sale.items.flatMap(it => it.allocs.map((al, i) => {
+            const r = d.roasts.get(al.roastId);
+            const l = r ? d.lots.get(r.lotId) : null;
+            return html`<tr key=${`${it.id}-${i}`} className="is-link" onClick=${() => r && nav('roast', { id: r.id })}>
+              <td>${d.productLabel(d.products.get(it.productId))}×${it.qty}</td>
+              <td><button type="button" className="cell-link" onClick=${e => { e.stopPropagation(); if (r) nav('roast', { id: r.id }); }}>${r ? `${fmtDate(r.at.slice(0, 10))} 焙煎` : '—'}</button><div className="row-meta">${l ? l.name : ''}</div></td>
+              <td className="r">${fmtG(al.g)}</td><td className="r">${r ? perG(d.roastGCost(r)) : '—'}</td><td className="r">${yen(d.allocCost(al))}</td>
+            </tr>`;
+          }))}</tbody>
+        </table></div>
+      </section>
+      ${sale.memo ? html`<section className="panel panel-pad"><h2 className="panel-title">メモ</h2><p className="prewrap">${sale.memo}</p></section>` : null}`;
+  }
+
+  const blankSaleItem = () => ({ key: uid('k'), id: '', productId: '', qty: '1', unitPrice: '' });
+
+  function SaleForm({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const editing = params.id ? db.sales.find(s => s.id === params.id) : null;
+    const [f, setF] = useState(() => (editing
+      ? { date: editing.date, channel: editing.channel, customer: editing.customer || '', memo: editing.memo || '', items: editing.items.map(it => ({ key: it.id, id: it.id, productId: it.productId, qty: String(it.qty), unitPrice: String(it.unitPrice) })) }
+      : { date: TODAY, channel: OPTIONS.channels[0], customer: '', memo: '', items: [blankSaleItem()] }));
+    const [errors, setErrors] = useState([]);
+    const errRef = useRef(null);
+    useScrollTo(errors, errRef);
+    if (params.id && !editing) return html`<${NotFound} ctx=${ctx} to="sales" label="販売" />`;
+
+    const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+    const setItem = (key, patch) => setF(p => ({ ...p, items: p.items.map(it => (it.key === key ? { ...it, ...patch } : it)) }));
+    const addItem = () => setF(p => ({ ...p, items: [...p.items, blankSaleItem()] }));
+    const removeItem = key => setF(p => ({ ...p, items: p.items.length > 1 ? p.items.filter(it => it.key !== key) : [blankSaleItem()] }));
+    const onProduct = (key, pid) => { const p = d.products.get(pid); setItem(key, { productId: pid, unitPrice: p ? String(p.price) : '' }); };
+
+    const parsed = f.items.map(it => ({ ...it, qtyN: parseNum(it.qty), priceN: parseNum(it.unitPrice) }));
+    const planInput = parsed
+      .filter(it => it.productId && Number.isInteger(it.qtyN) && it.qtyN > 0)
+      .map(it => ({ key: it.key, id: it.id, productId: it.productId, qty: it.qtyN, unitPrice: Number.isFinite(it.priceN) ? it.priceN : 0 }));
+    const plan = planSale(db, planInput, { excludeSaleId: editing ? editing.id : null });
+    const pd = plan.d;
+    const total = sum(plan.items, it => it.unitPrice * it.qty);
+    const estCost = sum(plan.items, it => pd.itemCost(it));
+    const stockRows = [...plan.need.entries()].map(([cid, need]) => ({ cid, need, avail: pd.coffeeRemain(cid), short: plan.short.get(cid) || 0, name: (pd.coffees.get(cid) || {}).name || '' }));
+    const usedPids = new Set(editing ? editing.items.map(it => it.productId) : []);
+    const groups = db.coffees
+      .map(c => ({ c, ps: pd.productsOf(c.id).filter(p => p.active || usedPids.has(p.id)) }))
+      .filter(gr => gr.ps.length && (gr.c.active || gr.ps.some(p => usedPids.has(p.id))));
+    const cancel = () => (editing ? nav('sale', { id: editing.id }) : nav('sales'));
+
+    const save = () => {
+      const errs = [];
+      if (isBlank(f.date)) errs.push('販売日を入力してください。');
+      if (!parsed.some(it => it.productId)) errs.push('商品を 1 つ以上選んでください。');
+      parsed.forEach((it, i) => {
+        const row = `${i + 1}行目`;
+        if (!it.productId) { if (parsed.length > 1) errs.push(`${row}：商品を選んでください（使わない行は × で消せます）。`); return; }
+        if (!(Number.isInteger(it.qtyN) && it.qtyN > 0)) errs.push(`${row}：数量は 1 以上の整数で入力してください。`);
+        if (!(Number.isFinite(it.priceN) && it.priceN >= 0)) errs.push(`${row}：単価（税抜）を円で入力してください。`);
+      });
+      for (const s of stockRows) if (s.short > 0) errs.push(`${s.name} の在庫が ${fmtG(s.short)} 足りません（在庫 ${fmtG(s.avail)}、必要 ${fmtG(s.need)}）。先に焙煎記録か在庫調整を入れてください。`);
+      setErrors(errs);
+      if (errs.length) return;
+      const id = editing ? editing.id : uid('s');
+      const rec = { id, date: f.date, channel: f.channel, customer: f.customer.trim(), memo: f.memo.trim(), items: plan.items.map(it => ({ id: it.id || uid('i'), productId: it.productId, qty: it.qty, unitPrice: it.unitPrice, allocs: it.allocs })) };
+      commit(n => { if (editing) n.sales = n.sales.map(x => (x.id === id ? rec : x)); else n.sales.push(rec); });
+      notify(editing ? '販売を保存しました。引当をやり直しました' : `販売を記録しました（${yen(total)}）。在庫から古い順に出しました`);
+      nav('sale', { id });
+    };
+
+    return html`
+      <${PageHead} back=${{ label: editing ? 'この販売' : '販売', go: cancel }} eyebrow="販売" title=${editing ? '販売を編集' : '販売を記録'} />
+      <div className="form form-narrow">
+        <${ErrorList} errors=${errors} innerRef=${errRef} />
+        <section className="form-section">
+          <h2 className="panel-title">販売</h2>
+          <div className="grid">
+            <${Field} label="販売日" req htmlFor="sale-date"><input id="sale-date" className="input" type="date" value=${f.date} onChange=${e => set('date', e.target.value)} /></${Field}>
+            <${Field} label="販売チャネル" req htmlFor="sale-channel"><select id="sale-channel" className="select" value=${f.channel} onChange=${e => set('channel', e.target.value)}>${OPTIONS.channels.map(o => html`<option key=${o} value=${o}>${o}</option>`)}</select></${Field}>
+            <${Field} label="販売先" htmlFor="sale-customer" hint="卸先の店名、イベント名など"><input id="sale-customer" className="input" autoComplete="off" value=${f.customer} onChange=${e => set('customer', e.target.value)} /></${Field}>
+            <${Field} label="メモ" htmlFor="sale-memo"><input id="sale-memo" className="input" autoComplete="off" value=${f.memo} onChange=${e => set('memo', e.target.value)} /></${Field}>
+          </div>
+        </section>
+        <section className="form-section">
+          <div className="form-section-head"><h2 className="panel-title">明細</h2><span className="muted small">単価の初期値は商品の販売価格（税抜）。卸や値引きのときは書き換えます</span></div>
+          <div className="items">${f.items.map((it, i) => {
+            const amt = parseNum(it.qty) * parseNum(it.unitPrice);
+            return html`<div className="item" key=${it.key}>
+              <div className="field item-product">
+                <label className="field-label" htmlFor=${`sale-item-${i}-product`}>商品</label>
+                <select id=${`sale-item-${i}-product`} className="select" value=${it.productId} onChange=${e => onProduct(it.key, e.target.value)}>
+                  <option value="">選んでください</option>
+                  ${groups.map(gr => html`<optgroup key=${gr.c.id} label=${`${gr.c.name}（在庫 ${fmtG(pd.coffeeRemain(gr.c.id))}）`}>${gr.ps.map(p => html`<option key=${p.id} value=${p.id}>${gr.c.name} ${p.sizeG}g・${yen(p.price)}</option>`)}</optgroup>`)}
+                </select>
+              </div>
+              <div className="field item-qty"><label className="field-label" htmlFor=${`sale-item-${i}-qty`}>数量</label><${UnitInput} unit="個" inputMode="numeric" id=${`sale-item-${i}-qty`} value=${it.qty} onChange=${e => setItem(it.key, { qty: e.target.value })} /></div>
+              <div className="field item-price"><label className="field-label" htmlFor=${`sale-item-${i}-price`}>単価（税抜）</label><${UnitInput} unit="円" inputMode="numeric" id=${`sale-item-${i}-price`} value=${it.unitPrice} onChange=${e => setItem(it.key, { unitPrice: e.target.value })} /></div>
+              <div className="item-amount"><span className="only-narrow muted">金額</span><span>${Number.isFinite(amt) ? yen(amt) : '—'}</span></div>
+              <button type="button" className="icon-btn item-del" aria-label=${`${i + 1}行目を削除`} onClick=${() => removeItem(it.key)}>×</button>
+            </div>`;
+          })}</div>
+          <div><button type="button" className="btn" onClick=${addItem}>＋ 明細を追加</button></div>
+          <div className="calc">
+            <div className="calc-item"><span>金額（税抜）</span><strong>${yen(total)}</strong></div>
+            <div className="calc-item"><span>原価（見込み）</span><strong>${yen(estCost)}</strong></div>
+            <div className="calc-item"><span>粗利（見込み）</span><strong>${yen(total - estCost)}</strong></div>
+            <div className="calc-item"><span>粗利率</span><strong>${total > 0 ? pct((total - estCost) / total) : '—'}</strong></div>
+          </div>
+        </section>
+        <section className="form-section">
+          <div className="form-section-head"><h2 className="panel-title">在庫のチェックと引当の予定</h2><span className="muted small">焙煎日の古い順に出します</span></div>
+          ${stockRows.length === 0 ? html`<p className="muted">商品を選ぶと、在庫が足りるか確認します。</p>` : html`<ul className="stock-checks">${stockRows.map(s => html`<li key=${s.cid} className=${cx('stock-check', s.short > 0 && 'is-short')}>
+            <span className="stock-check-name">${s.name}</span>
+            <span>必要 ${fmtG(s.need)} ／ 在庫 ${fmtG(s.avail)}</span>
+            <span className=${cx('status', s.short > 0 ? 'status-bad' : 'status-ok')}>${s.short > 0 ? `！ ${fmtG(s.short)} 足りません` : `✓ 販売後の残り ${fmtG(s.avail - s.need)}`}</span>
+          </li>`)}</ul>`}
+          ${plan.items.some(it => it.allocs.length) ? html`<div className="table-wrap"><table className="data compact">
+            <thead><tr><th>商品</th><th>出す焙煎記録</th><th className="r">重さ</th></tr></thead>
+            <tbody>${plan.items.flatMap(it => it.allocs.map((al, j) => { const r = pd.roasts.get(al.roastId); return html`<tr key=${`${it.key}-${j}`}><td>${pd.productLabel(pd.products.get(it.productId))}×${it.qty}</td><td className="nw">${r ? `${fmtDate(r.at.slice(0, 10))} 焙煎` : '—'}</td><td className="r">${fmtG(al.g)}</td></tr>`; }))}</tbody>
+          </table></div>` : null}
+        </section>
+        <div className="form-actions">
+          <button type="button" className="btn" onClick=${cancel}>キャンセル</button>
+          <button type="button" className="btn btn-primary" onClick=${save}>${editing ? '保存する' : '記録する'}</button>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- 在庫調整 ---------- */
+  function initAdjust(db, d, preset) {
+    const base = { date: TODAY, kind: 'roast', coffeeId: '', roastId: '', lotId: '', mode: 'delta', delta: '', actual: '', reason: OPTIONS.reasons[0], memo: '' };
+    const firstLot = db.lots.filter(l => d.lotRemain(l) > 0).sort((a, b) => a.date.localeCompare(b.date))[0];
+    if (preset && preset.kind === 'lot') return { ...base, kind: 'lot', lotId: preset.targetId };
+    if (preset && preset.kind === 'roast') { const r = d.roasts.get(preset.targetId); return { ...base, coffeeId: r ? r.coffeeId : '', roastId: preset.targetId, lotId: firstLot ? firstLot.id : '' }; }
+    const c = db.coffees.find(x => x.active && d.oldestStock(x.id));
+    const r = c ? d.oldestStock(c.id) : null;
+    return { ...base, coffeeId: c ? c.id : '', roastId: r ? r.id : '', lotId: firstLot ? firstLot.id : '' };
+  }
+
+  function RecentAdjustments({ ctx }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const rows = [...db.adjustments].sort((a, b) => b.date.localeCompare(a.date));
+    const remove = a => {
+      const t = a.kind === 'lot' ? d.lots.get(a.targetId) : d.roasts.get(a.targetId);
+      const rem = t ? (a.kind === 'lot' ? d.lotRemain(t) : d.roastRemain(t)) : 0;
+      if (rem - a.deltaG < 0) { notify('この調整を消すと残量がマイナスになるため、削除できません'); return; }
+      commit(n => { n.adjustments = n.adjustments.filter(x => x.id !== a.id); });
+      notify('在庫調整を削除しました');
+    };
+    return html`<section className="panel">
+      <div className="panel-head"><h2 className="panel-title">これまでの在庫調整</h2><span className="muted">${rows.length}件</span></div>
+      ${rows.length === 0 ? html`<p className="empty">在庫調整はまだありません。</p>` : html`<div className="table-wrap"><table className="data">
+        <thead><tr><th>日付</th><th>対象</th><th className="r">増減</th><th>理由</th><th>メモ</th><th></th></tr></thead>
+        <tbody>${rows.map(a => html`<tr key=${a.id}>
+          <td className="nw">${fmtDate(a.date)}</td>
+          <td><button type="button" className="cell-link" onClick=${() => nav(a.kind === 'lot' ? 'lot' : 'roast', { id: a.targetId })}>${adjTargetLabel(d, a)}</button></td>
+          <td className="r">${signedG(a.deltaG)}</td><td className="nw">${a.reason}</td><td>${a.memo}</td>
+          <td className="r"><${ConfirmButton} className="btn btn-quiet btn-small btn-danger" label="削除" confirmLabel="もう一度押す" onConfirm=${() => remove(a)} /></td>
+        </tr>`)}</tbody>
+      </table></div>`}
+    </section>`;
+  }
+
+  function AdjustScreen({ ctx, params }) {
+    const { db, d, nav, commit, notify } = ctx;
+    const [f, setF] = useState(() => initAdjust(db, d, params.preset));
+    const [errors, setErrors] = useState([]);
+    const errRef = useRef(null);
+    useScrollTo(errors, errRef);
+    const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+    const onCoffee = cid => { const r = d.oldestStock(cid) || d.roastsOf(cid)[0]; setF(p => ({ ...p, coffeeId: cid, roastId: r ? r.id : '' })); };
+    const onMode = v => setF(p => ({ ...p, mode: v, reason: v === 'count' ? '棚卸しの差' : p.reason }));
+    const roastCoffees = db.coffees.filter(c => db.roasts.some(r => r.coffeeId === c.id));
+    const roastOptions = f.coffeeId ? d.roastsOf(f.coffeeId).filter(r => d.roastRemain(r) > 0 || r.id === f.roastId) : [];
+    const lotOptions = [...db.lots].filter(l => d.lotRemain(l) > 0 || l.id === f.lotId).sort((a, b) => b.date.localeCompare(a.date));
+    const target = f.kind === 'lot' ? d.lots.get(f.lotId) : d.roasts.get(f.roastId);
+    const current = target ? (f.kind === 'lot' ? d.lotRemain(target) : d.roastRemain(target)) : NaN;
+    const delta = f.mode === 'count' ? parseNum(f.actual) - current : parseNum(f.delta);
+    const after = current + delta;
+
+    const save = () => {
+      const errs = [];
+      if (isBlank(f.date)) errs.push('日付を入力してください。');
+      if (!target) errs.push(f.kind === 'lot' ? '生豆ロットを選んでください。' : '銘柄と焙煎記録を選んでください。');
+      if (f.mode === 'count') {
+        const a = parseNum(f.actual);
+        if (!(Number.isInteger(a) && a >= 0)) errs.push('実際に量った残量を、0 以上の整数（g）で入力してください。');
+        else if (target && a === current) errs.push('実際の残量が今の残量と同じなので、調整はいりません。');
+      } else if (!(Number.isInteger(delta) && delta !== 0)) {
+        errs.push('増減量を g の整数で入力してください（減ったときはマイナス。例：-50）。');
+      }
+      if (target && Number.isFinite(after) && after < 0) errs.push(`調整後の残量がマイナスになります（今の残量は ${fmtG(current)}）。`);
+      setErrors(errs);
+      if (errs.length) return;
+      commit(n => { n.adjustments.push({ id: uid('a'), date: f.date, kind: f.kind, targetId: target.id, deltaG: delta, reason: f.reason, memo: f.memo.trim() }); });
+      notify(`在庫を調整しました（${signedG(delta)}）`);
+      nav(f.kind === 'lot' ? 'lot' : 'roast', { id: target.id });
+    };
+
+    return html`
+      <${PageHead} title="在庫調整" eyebrow="記録する" />
+      <p className="lead">販売以外で在庫が増えたり減ったりしたときに記録します（試飲・サンプル・廃棄・棚卸しの差など）。</p>
+      <div className="form form-narrow">
+        <${ErrorList} errors=${errors} innerRef=${errRef} />
+        <section className="form-section">
+          <h2 className="panel-title">対象</h2>
+          <${Seg} label="対象の種類" value=${f.kind} onChange=${v => set('kind', v)} options=${[['roast', '焙煎豆'], ['lot', '生豆']]} />
+          ${f.kind === 'roast' ? html`<div className="grid">
+            <${Field} label="銘柄" req htmlFor="adj-coffee">
+              <select id="adj-coffee" className="select" value=${f.coffeeId} onChange=${e => onCoffee(e.target.value)}>
+                <option value="">選んでください</option>
+                ${roastCoffees.map(c => html`<option key=${c.id} value=${c.id}>${c.name}（残り ${fmtG(d.coffeeRemain(c.id))}）</option>`)}
+              </select>
+            </${Field}>
+            <${Field} label="焙煎記録" req htmlFor="adj-roast" hint="残量のある焙煎記録を、古い順に並べています">
+              <select id="adj-roast" className="select" value=${f.roastId} onChange=${e => set('roastId', e.target.value)}>
+                <option value="">選んでください</option>
+                ${roastOptions.map(r => html`<option key=${r.id} value=${r.id}>${fmtDate(r.at.slice(0, 10))} 焙煎（残り ${fmtG(d.roastRemain(r))}）</option>`)}
+              </select>
+            </${Field}>
+          </div>` : html`<${Field} label="生豆ロット" req htmlFor="adj-lot">
+            <select id="adj-lot" className="select" value=${f.lotId} onChange=${e => set('lotId', e.target.value)}>
+              <option value="">選んでください</option>
+              ${lotOptions.map(l => html`<option key=${l.id} value=${l.id}>${l.name}（残り ${fmtKg(d.lotRemain(l))}）</option>`)}
+            </select>
+          </${Field}>`}
+        </section>
+        <section className="form-section">
+          <h2 className="panel-title">増減</h2>
+          <${Seg} label="入力のしかた" value=${f.mode} onChange=${onMode} options=${[['delta', '増減量を入力'], ['count', '棚卸し（量った残量を入力）']]} />
+          <div className="grid">
+            ${f.mode === 'delta'
+              ? html`<${Field} label="増減量" req htmlFor="adj-delta" hint="減ったときはマイナス（例：-50）"><${UnitInput} unit="g" inputMode="text" id="adj-delta" value=${f.delta} onChange=${e => set('delta', e.target.value)} /></${Field}>`
+              : html`<${Field} label="実際に量った残量" req htmlFor="adj-actual" hint="差を自動で計算します"><${UnitInput} unit="g" inputMode="numeric" id="adj-actual" value=${f.actual} onChange=${e => set('actual', e.target.value)} /></${Field}>`}
+            <${Field} label="日付" req htmlFor="adj-date"><input id="adj-date" className="input" type="date" value=${f.date} onChange=${e => set('date', e.target.value)} /></${Field}>
+            <${Field} label="理由" req htmlFor="adj-reason"><select id="adj-reason" className="select" value=${f.reason} onChange=${e => set('reason', e.target.value)}>${OPTIONS.reasons.map(o => html`<option key=${o} value=${o}>${o}</option>`)}</select></${Field}>
+            <${Field} label="メモ" htmlFor="adj-memo"><input id="adj-memo" className="input" autoComplete="off" value=${f.memo} onChange=${e => set('memo', e.target.value)} /></${Field}>
+          </div>
+          <div className="calc">
+            <div className="calc-item"><span>今の残量</span><strong>${fmtG(current)}</strong></div>
+            <div className="calc-item"><span>増減</span><strong>${Number.isFinite(delta) ? signedG(delta) : '—'}</strong></div>
+            <div className="calc-item"><span>調整後の残量</span><strong className=${after < 0 ? 'is-bad' : ''}>${Number.isFinite(after) ? fmtG(after) : '—'}</strong></div>
+          </div>
+        </section>
+        <div className="form-actions"><button type="button" className="btn btn-primary" onClick=${save}>記録する</button></div>
+      </div>
+      <${RecentAdjustments} ctx=${ctx} />`;
+  }
+
+  /* ---------- 集計 ---------- */
+  function MonthChart({ rows }) {
+    const [hover, setHover] = useState(null);
+    const max = Math.max(1, ...rows.map(r => r.amount));
+    const H = 150;
+    const compact = rows.length > 6;
+    return html`<div className="colchart" role="group" aria-label="月別の売上（税抜）">
+      ${rows.map((r, i) => {
+        const h = Math.max(2, Math.round((r.amount / max) * H));
+        return html`<div key=${r.ym} className=${cx('col', hover === i && 'is-hover')} tabIndex="0" aria-label=${`${monthLabel(r.ym)}：売上 ${yen(r.amount)}、粗利 ${yen(r.margin)}`} onMouseEnter=${() => setHover(i)} onMouseLeave=${() => setHover(null)} onFocus=${() => setHover(i)} onBlur=${() => setHover(null)}>
+          <div className="col-plot" style=${{ height: `${H + 24}px` }}>
+            ${hover === i ? html`<div className="tip"><strong>${monthLabel(r.ym)}</strong><span>売上 ${yen(r.amount)}</span><span>粗利 ${yen(r.margin)}（${pct(r.margin / r.amount)}）</span><span>${r.count}件・${fmtKg(r.grams)}</span></div>` : null}
+            <div className="col-val">${compact ? yenMan(r.amount) : yen(r.amount)}</div>
+            <div className="col-bar" style=${{ height: `${h}px` }}></div>
+          </div>
+          <div className="col-label">${Number(r.ym.slice(5))}月</div>
+        </div>`;
+      })}
+    </div>`;
+  }
+
+  function Reports({ ctx }) {
+    const { db, d } = ctx;
+    const [period, setPeriod] = useState('3m');
+    const byMonth = new Map();
+    for (const s of db.sales) {
+      const ym = s.date.slice(0, 7);
+      const m = byMonth.get(ym) || { ym, amount: 0, cost: 0, grams: 0, count: 0 };
+      m.amount += d.saleAmount(s); m.cost += d.saleCost(s); m.grams += d.saleGrams(s); m.count += 1;
+      byMonth.set(ym, m);
+    }
+    const months = [...byMonth.values()].sort((a, b) => a.ym.localeCompare(b.ym)).map(m => ({ ...m, margin: m.amount - m.cost }));
+    const tot = { amount: sum(months, m => m.amount), cost: sum(months, m => m.cost), grams: sum(months, m => m.grams), count: sum(months, m => m.count) };
+    const thisYm = TODAY.slice(0, 7);
+    const inPeriod = ym => (period === 'all' ? true : period === 'this' ? ym === thisYm : period === 'last' ? ym === addMonths(thisYm, -1) : ym >= addMonths(thisYm, -2) && ym <= thisYm);
+    const byCoffee = new Map();
+    for (const s of db.sales) {
+      if (!inPeriod(s.date.slice(0, 7))) continue;
+      for (const it of s.items) {
+        const p = d.products.get(it.productId);
+        if (!p) continue;
+        const row = byCoffee.get(p.coffeeId) || { cid: p.coffeeId, grams: 0, amount: 0, cost: 0 };
+        row.grams += p.sizeG * it.qty; row.amount += d.itemAmount(it); row.cost += d.itemCost(it);
+        byCoffee.set(p.coffeeId, row);
+      }
+    }
+    const coffeeRows = [...byCoffee.values()].sort((a, b) => b.amount - a.amount);
+    const ct = { grams: sum(coffeeRows, r => r.grams), amount: sum(coffeeRows, r => r.amount), cost: sum(coffeeRows, r => r.cost) };
+    return html`
+      <${PageHead} title="集計" eyebrow="見る" />
+      <section className="panel panel-pad">
+        <div className="section-head"><h2 className="panel-title">月別の売上</h2><span className="muted small">税抜・棒にカーソルを合わせると粗利も出ます</span></div>
+        ${months.length ? html`<${MonthChart} rows=${months.slice(-12)} />` : html`<p className="muted">まだ販売の記録がありません。</p>`}
+      </section>
+      <section className="panel">
+        <div className="panel-head"><h2 className="panel-title">月別</h2><span className="muted small">税抜</span></div>
+        <div className="table-wrap"><table className="data">
+          <thead><tr><th>月</th><th className="r">売上</th><th className="r">原価</th><th className="r">粗利</th><th className="r">粗利率</th><th className="r">販売した重さ</th><th className="r">件数</th></tr></thead>
+          <tbody>${[...months].reverse().map(m => html`<tr key=${m.ym}><td className="nw">${monthLabel(m.ym)}</td><td className="r">${yen(m.amount)}</td><td className="r">${yen(m.cost)}</td><td className="r">${yen(m.margin)}</td><td className="r">${pct(m.margin / m.amount)}</td><td className="r">${fmtKg(m.grams)}</td><td className="r">${m.count}</td></tr>`)}</tbody>
+          <tfoot><tr><td>合計</td><td className="r">${yen(tot.amount)}</td><td className="r">${yen(tot.cost)}</td><td className="r">${yen(tot.amount - tot.cost)}</td><td className="r">${pct((tot.amount - tot.cost) / tot.amount)}</td><td className="r">${fmtKg(tot.grams)}</td><td className="r">${tot.count}</td></tr></tfoot>
+        </table></div>
+      </section>
+      <section className="panel">
+        <div className="panel-head panel-head-wrap"><h2 className="panel-title">銘柄別</h2><${Seg} label="期間" value=${period} onChange=${setPeriod} options=${[['this', '今月'], ['last', '先月'], ['3m', '過去3か月'], ['all', 'すべて']]} /></div>
+        ${coffeeRows.length === 0 ? html`<p className="empty">この期間の販売はありません。</p>` : html`<div className="table-wrap"><table className="data">
+          <thead><tr><th>銘柄</th><th className="r">販売した重さ</th><th className="r">売上</th><th className="r">粗利</th><th className="r">粗利率</th></tr></thead>
+          <tbody>${coffeeRows.map(r => html`<tr key=${r.cid}><td>${(d.coffees.get(r.cid) || {}).name || '—'}</td><td className="r">${fmtG(r.grams)}</td><td className="r">${yen(r.amount)}</td><td className="r">${yen(r.amount - r.cost)}</td><td className="r">${pct((r.amount - r.cost) / r.amount)}</td></tr>`)}</tbody>
+          <tfoot><tr><td>合計</td><td className="r">${fmtG(ct.grams)}</td><td className="r">${yen(ct.amount)}</td><td className="r">${yen(ct.amount - ct.cost)}</td><td className="r">${pct((ct.amount - ct.cost) / ct.amount)}</td></tr></tfoot>
+        </table></div>`}
+      </section>`;
+  }
+
+  /* ---------- その他（スマホ用メニュー） ---------- */
+  function MenuScreen({ ctx }) {
+    const items = [['coffees', '銘柄・商品', '銘柄ごとの残量、内容量と価格'], ['adjust', '在庫調整', '試飲・サンプル・廃棄・棚卸しの差'], ['reports', '集計', '月別・銘柄別の売上と粗利'], ['saleForm', '販売を記録', '商品と数量を入れて、在庫から出す']];
+    return html`
+      <${PageHead} title="その他" />
+      <div className="panel"><ul className="rows">${items.map(([name, label, desc]) => html`<li key=${name}><button type="button" className="row" onClick=${() => ctx.nav(name)}>
+        <div className="row-main"><div className="row-title">${label}</div><div className="row-meta">${desc}</div></div>
+        <div className="row-side muted" aria-hidden="true">›</div>
+      </button></li>`)}</ul></div>
+      <${DemoNotice} ctx=${ctx} />`;
+  }
+
+  const SCREENS = { home: Home, lots: LotList, lot: LotDetail, lotForm: LotForm, roasts: RoastList, roast: RoastDetail, roastForm: RoastForm, coffees: CoffeeList, sales: SaleList, sale: SaleDetail, saleForm: SaleForm, adjust: AdjustScreen, reports: Reports, menu: MenuScreen };
+
+  class Boundary extends React.Component {
+    constructor(props) { super(props); this.state = { err: null }; }
+    static getDerivedStateFromError(err) { return { err }; }
+    componentDidCatch(err) { console.error(err); }
+    render() {
+      if (!this.state.err) return this.props.children;
+      return html`<div className="panel panel-pad" role="alert">
+        <h2 className="panel-title">この画面を表示できませんでした</h2>
+        <p className="muted">${String(this.state.err && this.state.err.message || this.state.err)}</p>
+        <div><button type="button" className="btn" onClick=${this.props.onHome}>ホームに戻る</button></div>
+      </div>`;
+    }
+  }
+
+  function App() {
+    const [db, setDb] = useState(buildSeed);
+    const [route, setRoute] = useState({ name: 'home' });
+    const [toast, setToast] = useState(null);
+    const timer = useRef(null);
+    const d = useMemo(() => derive(db), [db]);
+    const notify = msg => { setToast(msg); clearTimeout(timer.current); timer.current = setTimeout(() => setToast(null), 3600); };
+    const nav = (name, extra = {}) => { setRoute({ name, ...extra }); window.scrollTo(0, 0); };
+    const commit = fn => setDb(prev => { const next = JSON.parse(JSON.stringify(prev)); fn(next); return next; });
+    const reset = () => { setDb(buildSeed()); setRoute({ name: 'home' }); window.scrollTo(0, 0); notify('サンプルデータに戻しました'); };
+    const ctx = { db, d, route, nav, commit, notify, reset };
+    const Screen = SCREENS[route.name] || Home;
+    const routeKey = JSON.stringify(route);
+    return html`<div className="shell">
+      <${Sidebar} ctx=${ctx} />
+      <div className="main-col">
+        <${TopBar} ctx=${ctx} />
+        <main className="main">
+          <div className="main-inner">
+            <${Boundary} key=${routeKey} onHome=${() => nav('home')}>
+              <${Screen} ctx=${ctx} params=${route} />
+            </${Boundary}>
+          </div>
+        </main>
+      </div>
+      <${TabBar} ctx=${ctx} />
+      ${toast ? html`<div className="toast" role="status" aria-live="polite">${toast}</div>` : null}
+    </div>`;
+  }
+
+  ReactDOM.createRoot(rootEl).render(html`<${App} />`);
+})();
+</script>
+</body>
+</html>
