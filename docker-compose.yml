@@ -1,0 +1,15 @@
+# 自分の PC でテスト用の PostgreSQL を動かす（architecture.md「9」）
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: coffee
+      POSTGRES_PASSWORD: coffee
+      POSTGRES_DB: coffee
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

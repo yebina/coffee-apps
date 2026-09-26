@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>ホーム</h1>
+<h2>焙煎豆の在庫</h2>
+<ul>
+  {% for coffee in coffees %}<li>{{ coffee.name }}：{{ coffee.remaining_g }}g</li>{% empty %}<li>まだありません</li>{% endfor %}
+</ul>
+<h2>生豆の在庫</h2>
+<ul>
+  {% for lot in lots %}<li>{{ lot.name }}：{{ lot.remaining_g }}g</li>{% empty %}<li>まだありません</li>{% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}ログイン{% endblock %}
+{% block content %}
+<h1>ログイン</h1>
+{% if form.errors %}<p>メールアドレス（ユーザー名）かパスワードが違います。</p>{% endif %}
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit">ログイン</button>
+</form>
+{% endblock %}
