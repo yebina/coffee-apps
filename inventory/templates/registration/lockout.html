@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}ログインを一時停止中・{% endblock %}
+{% block body %}
+<main class="login">
+  <div class="alert alert-error" role="alert">
+    <div class="alert-title">ログインを一時的に止めています</div>
+    <div>パスワードを続けて間違えたため、1時間たってからもう一度試してください。</div>
+  </div>
+</main>
+{% endblock %}

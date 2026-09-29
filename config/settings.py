@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.utils.csp import CSP
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -54,11 +55,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "axes",
     "inventory",
 ]
 
 MIDDLEWARE = [
+    # Fly.io のヘルスチェックに、HTTPS への転送やホスト名の確認より先に答える
+    "inventory.middleware.HealthCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -68,6 +73,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # ログインの失敗が続いたら、一時的に受け付けない（architecture.md 5.5）
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -97,6 +104,8 @@ DATABASES = {
         default="postgres://coffee:coffee@localhost:5432/coffee",
         conn_max_age=600,
         conn_health_checks=True,
+        # Supabase への接続は SSL を必須にする（architecture.md「6」）
+        ssl_require=_env_bool("DATABASE_SSL_REQUIRE", not DEBUG),
     )
 }
 
@@ -106,6 +115,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# 同じユーザー名・同じ IP アドレスで 5回続けて失敗したら、1時間受け付けない。
+# 本人の端末から間違えた場合も、別の回線（スマホの通信など）からならログインできる。
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1  # 時間
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = "registration/lockout.html"
+AXES_CLIENT_IP_CALLABLE = "inventory.middleware.client_ip"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/"
@@ -131,9 +154,32 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
+# コンテンツセキュリティポリシー（architecture.md 5.5）。
+# スクリプトは自分のサイトのファイルだけ。style 属性（メーターの幅など）があるので、
+# スタイルは 'unsafe-inline' を許す。フォントは Google Fonts から読み込む。
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF],
+    "style-src": [CSP.SELF, CSP.UNSAFE_INLINE, "https://fonts.googleapis.com"],
+    "font-src": [CSP.SELF, "https://fonts.gstatic.com"],
+    "img-src": [CSP.SELF, "data:"],
+    "connect-src": [CSP.SELF],
+    "manifest-src": [CSP.SELF],
+    "object-src": [CSP.NONE],
+    "base-uri": [CSP.NONE],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+}
+
+# ログは標準出力に出す（Fly.io の `fly logs` で見る）
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
     },
 }
 
@@ -144,3 +190,8 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # 使うドメインは fly.dev のサブドメインか、このアプリ専用のドメインなので、
+    # サブドメインまで含める設定と、ブラウザの事前登録（preload）はしない
+    SILENCED_SYSTEM_CHECKS = ["security.W005", "security.W021"]
+    SECURE_REFERRER_POLICY = "same-origin"

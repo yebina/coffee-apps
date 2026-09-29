@@ -5,6 +5,7 @@
 - 仕様書：[docs/spec.md](docs/spec.md)
 - アーキテクチャ：[docs/architecture.md](docs/architecture.md)
 - 画面のデモ：[docs/demo.html](docs/demo.html)
+- 公開と運用の手順（Fly.io・Supabase・バックアップ）：[docs/operations.md](docs/operations.md)
 
 ## 開発の始め方
 

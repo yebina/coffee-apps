@@ -1,0 +1,61 @@
+name: Backup
+
+# 毎晩 DB のダンプを取り、アプリとは別の場所（Cloudflare R2）に 30日分残す
+# （仕様書 8、architecture.md「8」）。
+# リポジトリの変数 BACKUP_ENABLED を true にすると動く（docs/operations.md）
+on:
+  schedule:
+    - cron: "0 18 * * *"  # 毎日 3:00（日本時間）
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    if: vars.BACKUP_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      # R2 は、aws コマンドが新しく付けるようになったチェックサムに対応していないことがある
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      R2_BUCKET: ${{ vars.R2_BUCKET }}
+      KEEP_DAYS: "30"
+    steps:
+      - name: DB のダンプを取る
+        env:
+          # GitHub Actions からは IPv6 で接続できないので、Supabase の共有プーラー
+          # （セッションモード）の接続文字列を使う（architecture.md「6」）
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          docker run --rm -e DATABASE_URL postgres:17 \
+            sh -c 'pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges' \
+            > backup.dump
+          # 空のファイルや壊れたファイルなら失敗にする
+          test -s backup.dump
+          docker run --rm -v "$PWD:/work" postgres:17 pg_restore --list /work/backup.dump > /dev/null
+          ls -l backup.dump
+
+      - name: R2 に保存する
+        run: |
+          set -euo pipefail
+          key="db/$(TZ=Asia/Tokyo date +%Y-%m-%d_%H%M).dump"
+          aws s3 cp backup.dump "s3://$R2_BUCKET/$key" --endpoint-url "$R2_ENDPOINT"
+          echo "保存しました: $key"
+
+      - name: 古いバックアップを消す
+        run: |
+          set -euo pipefail
+          cutoff=$(TZ=Asia/Tokyo date -d "$KEEP_DAYS days ago" +%Y-%m-%d)
+          aws s3 ls "s3://$R2_BUCKET/db/" --endpoint-url "$R2_ENDPOINT" | awk '{print $4}' |
+            while read -r name; do
+              [ -n "$name" ] || continue
+              if [[ "${name:0:10}" < "$cutoff" ]]; then
+                aws s3 rm "s3://$R2_BUCKET/db/$name" --endpoint-url "$R2_ENDPOINT"
+              fi
+            done
