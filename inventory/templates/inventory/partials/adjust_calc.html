@@ -1,0 +1,5 @@
+{% load fmt %}<div class="calc" id="adjust-calc"{% if oob %} hx-swap-oob="true"{% endif %} aria-live="polite">
+  <div class="calc-item"><span>今の残量</span><strong>{{ current|grams }}</strong></div>
+  <div class="calc-item"><span>増減</span><strong>{% if delta is not None %}{{ delta|signed_g }}{% else %}—{% endif %}</strong></div>
+  <div class="calc-item"><span>調整後の残量</span><strong{% if after is not None and after < 0 %} class="is-bad"{% endif %}>{{ after|grams }}</strong></div>
+</div>

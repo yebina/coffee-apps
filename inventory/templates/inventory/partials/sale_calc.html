@@ -1,0 +1,6 @@
+{% load fmt %}<div class="calc" id="sale-calc"{% if oob %} hx-swap-oob="true"{% endif %} aria-live="polite">
+  <div class="calc-item"><span>金額（税抜）</span><strong>{{ total|yen }}</strong></div>
+  <div class="calc-item"><span>原価（見込み）</span><strong>{% if has_lines %}{{ est_cost|yen }}{% else %}—{% endif %}</strong></div>
+  <div class="calc-item"><span>粗利（見込み）</span><strong>{% if has_lines %}{{ est_profit|yen }}{% else %}—{% endif %}</strong></div>
+  <div class="calc-item"><span>粗利率</span><strong>{{ est_margin|pct }}</strong></div>
+</div>

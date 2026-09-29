@@ -1,0 +1,6 @@
+{% load fmt %}<div class="calc" id="roast-calc-weight"{% if oob %} hx-swap-oob="true"{% endif %} aria-live="polite">
+  <div class="calc-item"><span>生豆使用量</span><strong>{{ used_g|grams }}</strong></div>
+  <div class="calc-item"><span>ロス率</span><strong{% if loss_out %} class="is-warn"{% endif %}>{{ loss_rate|pct }}</strong>{% if loss_out %}<em class="calc-note">5〜30% の範囲外</em>{% endif %}</div>
+  <div class="calc-item"><span>原価（税抜）</span><strong>{{ cost|yen }}</strong></div>
+  <div class="calc-item"><span>1g あたり原価</span><strong>{{ cost_per_g|per_g }}</strong></div>
+</div>

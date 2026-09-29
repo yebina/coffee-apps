@@ -1,0 +1,16 @@
+{% load fmt %}<div id="sale-stock"{% if oob %} hx-swap-oob="true"{% endif %} aria-live="polite">
+  {% if not has_lines %}<p class="muted">商品を選ぶと、在庫が足りるか確認します。</p>{% else %}
+  <ul class="stock-checks">{% for s in stock_rows %}
+    <li class="stock-check{% if s.short_g %} is-short{% endif %}">
+      <span class="stock-check-name">{{ s.coffee.name }}</span>
+      <span>必要 {{ s.need_g|grams }} ／ 在庫 {{ s.available_g|grams }}</span>
+      <span class="status {% if s.short_g %}status-bad{% else %}status-ok{% endif %}">{% if s.short_g %}！ {{ s.short_g|grams }} 足りません{% else %}✓ 販売後の残り {{ s.after_g|grams }}{% endif %}</span>
+    </li>
+  {% endfor %}</ul>
+  {% if plan_rows %}
+  <div class="table-wrap"><table class="data compact">
+    <thead><tr><th>商品</th><th>出す焙煎記録</th><th class="r">重さ</th></tr></thead>
+    <tbody>{% for row in plan_rows %}<tr><td>{{ row.line.product }}×{{ row.line.quantity }}</td><td class="nw">{{ row.roast.roasted_at|ymd }} 焙煎</td><td class="r">{{ row.weight_g|grams }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endif %}{% endif %}
+</div>

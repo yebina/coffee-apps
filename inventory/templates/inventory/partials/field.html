@@ -1,0 +1,6 @@
+<div class="field{% if wide %} span-2{% endif %}{% if extra_class %} {{ extra_class }}{% endif %}">
+  <label class="field-label" for="{{ field.id_for_label }}">{{ label|default:field.label }}{% if req %}<span class="req">必須</span>{% endif %}</label>
+  {% if unit %}<div class="input-unit">{{ field }}<span class="unit">{{ unit }}</span></div>{% else %}{{ field }}{% endif %}
+  {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+  {% if hint %}<div class="hint">{{ hint }}</div>{% endif %}
+</div>

@@ -204,7 +204,7 @@ def test_sale_allocates_oldest_roast_first(make_roast, product, channel):
 
 def test_sale_rejects_when_stock_is_short(make_roast, product, channel):
     make_roast()  # 425g
-    with pytest.raises(StockError, match="75g 足りません"):
+    with pytest.raises(StockError, match="75 g 足りません"):
         sell(channel, (product, 1), (product, 1), (product, 1))
     assert not Sale.objects.exists()
 

@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}在庫調整・{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-head-main"><div class="eyebrow">記録する</div><h1 class="title">在庫調整</h1></div></div>
+<p class="lead">販売以外で在庫が増えたり減ったりしたときに記録します（試飲・サンプル・廃棄・棚卸しの差など）。</p>
+<form class="form form-narrow" method="post" novalidate
+      hx-post="{% url 'inventory:adjust_preview' %}" hx-trigger="input delay:300ms, change" hx-swap="none">
+  {% csrf_token %}
+  <input type="hidden" name="idempotency_key" value="{{ key }}">
+  {% include "inventory/partials/form_errors.html" %}
+  <section class="form-section">
+    <h2 class="panel-title">対象</h2>
+    {% include "inventory/partials/field.html" with field=form.target req=True hint="焙煎豆は、銘柄ごとに残量のある焙煎記録を古い順に並べています" %}
+  </section>
+  <section class="form-section">
+    <h2 class="panel-title">増減</h2>
+    <div class="seg seg-radio" role="radiogroup" aria-label="入力のしかた">
+      {% for radio in form.mode %}<label>{{ radio.tag }}{{ radio.choice_label }}</label>{% endfor %}
+    </div>
+    <div class="grid">
+      {% include "inventory/partials/field.html" with field=form.delta_g req=True unit="g" hint="減ったときはマイナス（例：-50）" extra_class="when-delta" %}
+      {% include "inventory/partials/field.html" with field=form.actual_g req=True unit="g" hint="差を自動で計算します" extra_class="when-count" %}
+      {% include "inventory/partials/field.html" with field=form.adjusted_on req=True %}
+      {% include "inventory/partials/field.html" with field=form.reason req=True %}
+      {% include "inventory/partials/field.html" with field=form.memo %}
+    </div>
+    {% include "inventory/partials/adjust_calc.html" %}
+  </section>
+  <div class="form-actions"><button class="btn btn-primary">記録する</button></div>
+</form>
+<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">これまでの在庫調整</h2><span class="muted">{{ recent|length }}件</span></div>
+  {% if not recent %}<p class="empty">在庫調整はまだありません。</p>{% else %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>日付</th><th>対象</th><th class="r">増減</th><th>理由</th><th>メモ</th><th></th></tr></thead>
+    <tbody>{% for a in recent %}<tr>
+      <td class="nw">{{ a.adjusted_on|ymd }}</td>
+      <td>{% if a.green_lot %}<a class="cell-link" href="{% url 'inventory:lot_detail' a.green_lot_id %}">生豆：{{ a.green_lot.name }}</a>{% else %}<a class="cell-link" href="{% url 'inventory:roast_detail' a.roast_id %}">焙煎豆：{{ a.roast.coffee.name }}（{{ a.roast.roasted_at|ymd }} 焙煎）</a>{% endif %}</td>
+      <td class="r">{{ a.delta_g|signed_g }}</td><td class="nw">{{ a.reason }}</td><td>{{ a.memo }}</td>
+      <td class="r"><form class="inline-form" method="post" action="{% url 'inventory:adjust_delete' a.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-small btn-danger" data-confirm="もう一度押す">削除</button></form></td>
+    </tr>{% endfor %}</tbody>
+  </table></div>{% endif %}
+</section>
+{% endblock %}

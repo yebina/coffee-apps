@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}その他・{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-head-main"><h1 class="title">その他</h1></div></div>
+<div class="panel"><ul class="rows">
+  <li><a class="row" href="{% url 'inventory:coffee_list' %}"><div class="row-main"><div class="row-title">銘柄・商品</div><div class="row-meta">銘柄ごとの残量、内容量と価格</div></div><div class="row-side muted" aria-hidden="true">›</div></a></li>
+  <li><a class="row" href="{% url 'inventory:adjust' %}"><div class="row-main"><div class="row-title">在庫調整</div><div class="row-meta">試飲・サンプル・廃棄・棚卸しの差</div></div><div class="row-side muted" aria-hidden="true">›</div></a></li>
+  <li><a class="row" href="{% url 'inventory:report' %}"><div class="row-main"><div class="row-title">集計</div><div class="row-meta">月別・銘柄別の売上と粗利</div></div><div class="row-side muted" aria-hidden="true">›</div></a></li>
+  <li><a class="row" href="{% url 'inventory:sale_new' %}"><div class="row-main"><div class="row-title">販売を記録</div><div class="row-meta">商品と数量を入れて、在庫から出す</div></div><div class="row-side muted" aria-hidden="true">›</div></a></li>
+</ul></div>
+<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn btn-quiet">ログアウト</button></form>
+{% endblock %}

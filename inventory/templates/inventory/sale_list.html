@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}販売・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main"><div class="eyebrow">記録する</div><h1 class="title">販売</h1></div>
+  <div class="actions"><a class="btn btn-primary" href="{% url 'inventory:sale_new' %}">販売を記録</a></div>
+</div>
+<form class="toolbar" method="get">
+  <label class="sr-only" for="sale-month">表示する月</label>
+  <select id="sale-month" class="select select-auto" name="month" data-autosubmit>
+    <option value="all">すべての月</option>
+    {% for value, ym in months %}<option value="{{ value }}"{% if value == month %} selected{% endif %}>{{ ym|month_label }}</option>{% endfor %}
+  </select>
+  <noscript><button class="btn">表示</button></noscript>
+  <span class="muted small">{{ sales|length }}件・売上 {{ amount|yen }}・粗利 {{ profit|yen }}（税抜）</span>
+</form>
+<div class="panel">
+  {% if not sales %}<p class="empty">この月の販売はありません。</p>{% else %}
+  <ul class="rows">{% for s in sales %}{% with first=s.items.all.0 count=s.items.all|length %}
+    <li><a class="row" href="{% url 'inventory:sale_detail' s.pk %}">
+      <div class="row-main">
+        <div class="row-title"><span>{{ s.sold_on|ymd }}</span><span class="chip">{{ s.channel }}</span>{% if s.customer %}<span class="row-meta">{{ s.customer }}</span>{% endif %}</div>
+        <div class="row-meta">{% if first %}{{ first.product }}×{{ first.quantity }}{% if count > 1 %} ほか{{ count|add:"-1" }}件{% endif %}{% endif %}</div>
+      </div>
+      <div class="row-side"><div class="row-num">{{ s.amount_yen|yen }}</div><div class="row-sub">粗利 {{ s.gross_profit_yen|yen }}（{% if s.amount_yen %}{{ s.gross_profit_yen|ratio:s.amount_yen|pct }}{% else %}—{% endif %}）</div></div>
+    </a></li>
+  {% endwith %}{% endfor %}</ul>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}銘柄・商品・{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-head-main"><div class="eyebrow">在庫</div><h1 class="title">銘柄・商品</h1></div></div>
+<p class="lead">銘柄は販売する焙煎豆の種類、商品は銘柄×内容量です。在庫は銘柄ごとに g で数え、どの内容量で売っても同じ在庫から減ります。</p>
+<div class="toolbar">
+  <div class="seg" role="group" aria-label="表示する銘柄">
+    <a class="seg-btn{% if not show_all %} is-on{% endif %}" href="?show=active">販売中</a>
+    <a class="seg-btn{% if show_all %} is-on{% endif %}" href="?show=all">すべて</a>
+  </div>
+  <form class="inline-add search" method="post" action="{% url 'inventory:coffee_create' %}">{% csrf_token %}
+    <label class="sr-only" for="coffee-new-name">新しい銘柄名</label>
+    <input id="coffee-new-name" class="input" name="name" placeholder="新しい銘柄名" required>
+    <button class="btn">銘柄を追加</button>
+  </form>
+</div>
+{% for card in cards %}{% with coffee=card.coffee %}
+<section class="panel" id="coffee-{{ coffee.pk }}">
+  <div class="coffee-head">
+    <div class="row-main">
+      <div class="row-title"><h2 class="panel-title">{{ coffee.name }}</h2>{% if card.latest %}{% level_chip card.latest %}{% endif %}{% if not coffee.is_active %}<span class="chip chip-off">販売停止</span>{% endif %}</div>
+      <div class="row-meta">{% if card.oldest_days is not None %}いちばん古い焙煎から {{ card.oldest_days }}日{% else %}在庫なし{% endif %}{% if coffee.description %}・{{ coffee.description }}{% endif %}</div>
+    </div>
+    <div class="row-side"><div class="big">{{ card.remaining_g|grams }}</div><div class="row-sub">焙煎豆の残量</div></div>
+  </div>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>内容量</th><th class="r">販売価格（税抜）</th><th class="r">包材費</th><th class="r">何個分</th><th>販売</th></tr></thead>
+    <tbody>{% for row in card.products %}{% with p=row.product %}<tr>
+      <td class="nw">{{ p.weight_g }} g</td><td class="r">{{ p.price_yen|yen }}</td><td class="r">{{ p.packaging_cost_yen|yen }}</td><td class="r">{{ row.packs }} 個</td>
+      <td><form class="inline-form" method="post" action="{% url 'inventory:product_toggle' p.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-small">{% if p.is_active %}販売中 → 停止する{% else %}停止中 → 再開する{% endif %}</button></form></td>
+    </tr>{% endwith %}{% empty %}<tr><td colspan="5" class="muted">商品（内容量と価格）がまだありません。</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <details class="roast-stock">
+    <summary>商品を追加</summary>
+    <form class="product-form" method="post" action="{% url 'inventory:product_create' coffee.pk %}">{% csrf_token %}
+      <div class="grid grid-3">
+        <div class="field"><label class="field-label" for="pf-size-{{ coffee.pk }}">内容量<span class="req">必須</span></label><div class="input-unit"><input id="pf-size-{{ coffee.pk }}" class="input num" name="weight_g" inputmode="numeric" autocomplete="off" required><span class="unit">g</span></div></div>
+        <div class="field"><label class="field-label" for="pf-price-{{ coffee.pk }}">販売価格（税抜）<span class="req">必須</span></label><div class="input-unit"><input id="pf-price-{{ coffee.pk }}" class="input num" name="price_yen" inputmode="numeric" autocomplete="off" required><span class="unit">円</span></div></div>
+        <div class="field"><label class="field-label" for="pf-pack-{{ coffee.pk }}">包材費</label><div class="input-unit"><input id="pf-pack-{{ coffee.pk }}" class="input num" name="packaging_cost_yen" inputmode="numeric" autocomplete="off"><span class="unit">円</span></div><div class="hint">1個あたりの袋・ラベル代</div></div>
+      </div>
+      <div><button class="btn btn-primary btn-small">商品を追加する</button></div>
+    </form>
+  </details>
+  {% if card.stock_roasts %}
+  <details class="roast-stock">
+    <summary>焙煎記録ごとの残量（{{ card.stock_roasts|length }}件）</summary>
+    <p class="panel-note">販売すると、焙煎日の古い行から順に減ります。</p>
+    <div class="table-wrap"><table class="data compact">
+      <thead><tr><th>焙煎日</th><th>生豆ロット</th><th class="r">焙煎後</th><th class="r">残量</th><th class="r">1g あたり原価</th></tr></thead>
+      <tbody>{% for r in card.stock_roasts %}<tr>
+        <td class="nw"><a class="cell-link" href="{% url 'inventory:roast_detail' r.pk %}">{{ r.roasted_at|ymd }}</a></td>
+        <td>{{ r.green_lot.name }}</td><td class="r">{{ r.output_g|grams }}</td><td class="r">{{ r.remaining_g|grams }}</td><td class="r">{{ r.cost_per_g|per_g }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+  </details>
+  {% endif %}
+  <div class="card-foot">
+    <form class="inline-form" method="post" action="{% url 'inventory:coffee_toggle' coffee.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-small">{% if coffee.is_active %}販売をやめる{% else %}販売を再開する{% endif %}</button></form>
+  </div>
+</section>
+{% endwith %}{% empty %}
+<div class="panel"><p class="empty">銘柄はまだありません。上の欄から追加するか、焙煎の記録のときに作れます。</p></div>
+{% endfor %}
+{% endblock %}

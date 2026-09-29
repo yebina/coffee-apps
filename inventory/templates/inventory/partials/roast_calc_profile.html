@@ -1,0 +1,4 @@
+{% load fmt %}<div class="calc" id="roast-calc-profile"{% if oob %} hx-swap-oob="true"{% endif %} aria-live="polite">
+  <div class="calc-item"><span>1ハゼ後の時間</span><strong class="mono">{{ dev_s|mmss }}</strong></div>
+  <div class="calc-item"><span>1ハゼ後の割合（DTR）</span><strong>{{ dtr|pct }}</strong></div>
+</div>

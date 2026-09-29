@@ -1,0 +1,8 @@
+{% load fmt %}<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">在庫調整の履歴</h2><span class="muted">{{ adjustments|length }}件</span></div>
+  {% if not adjustments %}<p class="empty">在庫調整はありません。</p>{% else %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>日付</th><th class="r">増減</th><th>理由</th><th>メモ</th></tr></thead>
+    <tbody>{% for a in adjustments %}<tr><td class="nw">{{ a.adjusted_on|ymd }}</td><td class="r">{{ a.delta_g|signed_g }}</td><td class="nw">{{ a.reason }}</td><td>{{ a.memo }}</td></tr>{% endfor %}</tbody>
+  </table></div>{% endif %}
+</section>

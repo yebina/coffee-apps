@@ -1,0 +1,8 @@
+{% if forms_with_errors %}
+<div class="alert alert-error" role="alert" data-scroll>
+  <div class="alert-title">保存できません</div>
+  <ul>
+    {% for f in forms_with_errors %}{% for error in f.non_field_errors %}<li>{{ error }}</li>{% endfor %}{% for field in f %}{% for error in field.errors %}<li>{% if field.label %}{{ field.label }}：{% endif %}{{ error }}</li>{% endfor %}{% endfor %}{% endfor %}
+  </ul>
+</div>
+{% endif %}

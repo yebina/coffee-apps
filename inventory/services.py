@@ -163,13 +163,55 @@ class PlannedAllocation:
     weight_g: int
 
 
-def plan_allocations(
+@dataclass
+class AllocationPlan:
+    """引当の試算。lines と同じ順に、明細ごとの引当と足りない量を持つ。"""
+
+    lines: Sequence[SaleLine]
+    allocations: list[list[PlannedAllocation]]
+    short_g: list[int]
+    available_by_coffee: dict[int, int]
+
+    @property
+    def ok(self) -> bool:
+        return not any(self.short_g)
+
+    def stock_rows(self) -> list[dict]:
+        """銘柄ごとの「必要な量・在庫・足りない量」（画面の在庫チェック用）。"""
+        rows: dict[int, dict] = {}
+        for line, short in zip(self.lines, self.short_g, strict=True):
+            coffee = line.product.coffee
+            row = rows.setdefault(
+                coffee.pk,
+                {
+                    "coffee": coffee,
+                    "need_g": 0,
+                    "available_g": self.available_by_coffee.get(coffee.pk, 0),
+                    "short_g": 0,
+                },
+            )
+            row["need_g"] += line.weight_g
+            row["short_g"] += short
+        for row in rows.values():
+            row["after_g"] = row["available_g"] - row["need_g"]
+        return list(rows.values())
+
+    def item_cost(self, index: int) -> Decimal:
+        line = self.lines[index]
+        return calc.sale_item_cost(
+            [(a.weight_g, a.roast.cost_per_g) for a in self.allocations[index]],
+            line.product.packaging_cost_yen,
+            line.quantity,
+        )
+
+
+def preview_allocations(
     lines: Sequence[SaleLine], *, exclude_sale: Sale | None = None
-) -> list[list[PlannedAllocation]]:
+) -> AllocationPlan:
     """明細ごとに、焙煎日の古い焙煎記録から順に引き当てる（先入れ先出し）。保存はしない。
 
     販売を修正するときの試算では、exclude_sale の引当は無かったものとして数える。
-    在庫が足りなければ StockError を出す。
+    在庫が足りなくても例外は出さず、足りない量を返す。
     """
     coffee_ids = {line.product.coffee_id for line in lines}
     roasts = list(
@@ -185,33 +227,44 @@ def plan_allocations(
                 remaining[alloc.roast_id] += alloc.weight_g
 
     by_coffee: dict[int, list[Roast]] = defaultdict(list)
+    available: dict[int, int] = defaultdict(int)
     for r in roasts:
         by_coffee[r.coffee_id].append(r)
+        available[r.coffee_id] += max(0, remaining[r.pk])
 
-    shortages: list[str] = []
-    plan: list[list[PlannedAllocation]] = []
+    allocations: list[list[PlannedAllocation]] = []
+    short: list[int] = []
     for line in lines:
         need = line.weight_g
-        allocations: list[PlannedAllocation] = []
+        planned: list[PlannedAllocation] = []
         for r in by_coffee[line.product.coffee_id]:
             if need == 0:
                 break
             take = min(need, remaining[r.pk])
             if take <= 0:
                 continue
-            allocations.append(PlannedAllocation(r, take))
+            planned.append(PlannedAllocation(r, take))
             remaining[r.pk] -= take
             need -= take
-        if need:
-            shortages.append(f"{line.product}：{need}g 足りません")
-        plan.append(allocations)
+        allocations.append(planned)
+        short.append(need)
+    return AllocationPlan(lines, allocations, short, dict(available))
 
-    if shortages:
-        raise StockError(
-            "焙煎豆の在庫が足りません（先に焙煎記録か在庫調整を入れてください）。"
-            + " ".join(shortages)
-        )
-    return plan
+
+def plan_allocations(
+    lines: Sequence[SaleLine], *, exclude_sale: Sale | None = None
+) -> list[list[PlannedAllocation]]:
+    """preview_allocations と同じ。在庫が足りなければ StockError を出す。"""
+    plan = preview_allocations(lines, exclude_sale=exclude_sale)
+    if not plan.ok:
+        shortages = [
+            f"{row['coffee']} の在庫が {row['short_g']:,} g 足りません"
+            f"（在庫 {row['available_g']:,} g、必要 {row['need_g']:,} g）。"
+            for row in plan.stock_rows()
+            if row["short_g"]
+        ]
+        raise StockError(" ".join(shortages) + "先に焙煎記録か在庫調整を入れてください。")
+    return plan.allocations
 
 
 @transaction.atomic

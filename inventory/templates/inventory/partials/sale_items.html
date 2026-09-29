@@ -1,0 +1,35 @@
+{% load fmt %}<div class="items" id="sale-items">
+  {{ formset.management_form }}
+  {% for f in formset %}
+  <div class="item">
+    <div class="field item-product">
+      <label class="field-label" for="id_{{ f.prefix }}-product">商品</label>
+      <select id="id_{{ f.prefix }}-product" name="{{ f.prefix }}-product" class="select"
+              hx-post="{% url 'inventory:sale_preview' %}" hx-trigger="change" hx-include="closest form" hx-vals='{"action": "product"}' hx-target="#sale-items" hx-swap="outerHTML">
+        <option value="">選んでください</option>
+        {% with current=f.product.value|stringformat:"s" %}{% for coffee, group in groups.items %}
+        <optgroup label="{{ coffee.name }}（在庫 {{ group.remaining_g|grams }}）">
+          {% for p in group.products %}<option value="{{ p.pk }}"{% if current == p.pk|stringformat:"s" %} selected{% endif %}>{{ coffee.name }} {{ p.weight_g }}g・{{ p.price_yen|yen }}</option>{% endfor %}
+        </optgroup>
+        {% endfor %}{% endwith %}
+      </select>
+      {% if show_errors %}{% for e in f.product.errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% endif %}
+    </div>
+    <div class="field item-qty">
+      <label class="field-label" for="{{ f.quantity.id_for_label }}">数量</label>
+      <div class="input-unit">{{ f.quantity }}<span class="unit">個</span></div>
+      {% if show_errors %}{% for e in f.quantity.errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% endif %}
+    </div>
+    <div class="field item-price">
+      <label class="field-label" for="{{ f.unit_price_yen.id_for_label }}">単価（税抜）</label>
+      <div class="input-unit">{{ f.unit_price_yen }}<span class="unit">円</span></div>
+      {% if show_errors %}{% for e in f.unit_price_yen.errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% endif %}
+    </div>
+    {{ f.prev_product }}
+    <div class="item-amount"><span class="only-narrow muted">金額</span><span id="sale-amount-{{ forloop.counter0 }}">{{ f.quantity.value|times:f.unit_price_yen.value|yen }}</span></div>
+    <button type="button" class="icon-btn item-del" aria-label="{{ forloop.counter }}行目を削除"
+            hx-post="{% url 'inventory:sale_preview' %}" hx-include="closest form" hx-vals='{"action": "remove:{{ forloop.counter0 }}"}' hx-target="#sale-items" hx-swap="outerHTML">×</button>
+  </div>
+  {% endfor %}
+  <div><button type="button" class="btn" hx-post="{% url 'inventory:sale_preview' %}" hx-include="closest form" hx-vals='{"action": "add"}' hx-target="#sale-items" hx-swap="outerHTML">＋ 明細を追加</button></div>
+</div>

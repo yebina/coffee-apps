@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}{% if sale %}販売を編集{% else %}販売を記録{% endif %}・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main">
+    {% if sale %}<a class="back" href="{% url 'inventory:sale_detail' sale.pk %}">‹ この販売</a>{% else %}<a class="back" href="{% url 'inventory:sale_list' %}">‹ 販売</a>{% endif %}
+    <div class="eyebrow">販売</div>
+    <h1 class="title">{% if sale %}販売を編集{% else %}販売を記録{% endif %}</h1>
+  </div>
+</div>
+<form class="form form-narrow" method="post" novalidate
+      hx-post="{% url 'inventory:sale_preview' %}" hx-trigger="input delay:300ms" hx-swap="none">
+  {% csrf_token %}
+  <input type="hidden" name="idempotency_key" value="{{ key }}">
+  {% if sale %}<input type="hidden" name="sale_id" value="{{ sale.pk }}">{% endif %}
+  {% include "inventory/partials/form_errors.html" %}
+  <section class="form-section">
+    <h2 class="panel-title">販売</h2>
+    <div class="grid">
+      {% include "inventory/partials/field.html" with field=form.sold_on req=True %}
+      {% include "inventory/partials/field.html" with field=form.channel req=True %}
+      {% include "inventory/partials/field.html" with field=form.customer hint="卸先の店名、イベント名など" %}
+      {% include "inventory/partials/field.html" with field=form.memo %}
+    </div>
+  </section>
+  <section class="form-section">
+    <div class="form-section-head"><h2 class="panel-title">明細</h2><span class="muted small">単価の初期値は商品の販売価格（税抜）。卸や値引きのときは書き換えます</span></div>
+    {% include "inventory/partials/sale_items.html" %}
+    {% include "inventory/partials/sale_calc.html" %}
+  </section>
+  <section class="form-section">
+    <div class="form-section-head"><h2 class="panel-title">在庫のチェックと引当の予定</h2><span class="muted small">焙煎日の古い順に出します</span></div>
+    {% include "inventory/partials/sale_stock.html" %}
+  </section>
+  <div class="form-actions">
+    <a class="btn" href="{% if sale %}{% url 'inventory:sale_detail' sale.pk %}{% else %}{% url 'inventory:sale_list' %}{% endif %}">キャンセル</a>
+    <button class="btn btn-primary">{% if sale %}保存する{% else %}記録する{% endif %}</button>
+  </div>
+</form>
+{% endblock %}

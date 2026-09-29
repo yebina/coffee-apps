@@ -1,0 +1,7 @@
+<div class="field span-2" id="roast-coffee-field"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <label class="field-label" for="{{ form.coffee_choice.id_for_label }}">銘柄<span class="req">必須</span></label>
+  {{ form.coffee_choice }}
+  <div class="new-input">{{ form.new_coffee }}</div>
+  {% if not oob %}{% for error in form.coffee_choice.errors %}<div class="field-error">{{ error }}</div>{% endfor %}{% for error in form.new_coffee.errors %}<div class="field-error">{{ error }}</div>{% endfor %}{% endif %}
+  <div class="hint">{% if coffee_locked %}販売に使われているため、銘柄は変えられません。{% else %}同じ生豆ロットから、焙煎度を変えて別の銘柄も作れます。{% endif %}</div>
+</div>

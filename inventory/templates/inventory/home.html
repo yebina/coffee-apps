@@ -1,12 +1,43 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load fmt %}
 {% block content %}
-<h1>ホーム</h1>
-<h2>焙煎豆の在庫</h2>
-<ul>
-  {% for coffee in coffees %}<li>{{ coffee.name }}：{{ coffee.remaining_g }}g</li>{% empty %}<li>まだありません</li>{% endfor %}
-</ul>
-<h2>生豆の在庫</h2>
-<ul>
-  {% for lot in lots %}<li>{{ lot.name }}：{{ lot.remaining_g }}g</li>{% empty %}<li>まだありません</li>{% endfor %}
-</ul>
+<div class="page-head"><div class="page-head-main"><div class="eyebrow">{{ today|long_date }}</div><h1 class="title">ホーム</h1></div></div>
+<div class="quick">
+  <a class="quick-btn is-primary" href="{% url 'inventory:roast_new' %}">{% include "inventory/partials/icon.html" with name="flame" size=26 %}<span><strong>焙煎を記録</strong><small>投入量・焙煎後重量・焙煎時間</small></span></a>
+  <a class="quick-btn" href="{% url 'inventory:sale_new' %}">{% include "inventory/partials/icon.html" with name="tag" size=26 %}<span><strong>販売を記録</strong><small>商品と数量。在庫から古い順に出します</small></span></a>
+</div>
+<section class="section">
+  <div class="section-head"><h2 class="h2">今月の売上</h2><span class="muted small">{{ today|month_label }}・税抜</span></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">売上</div><div class="stat-value">{{ month.amount|yen }}</div><div class="stat-sub">{{ month.count }}件</div></div>
+    <div class="stat"><div class="stat-label">粗利</div><div class="stat-value">{{ month.profit|yen }}</div><div class="stat-sub">原価 {{ month.cost|yen }}</div></div>
+    <div class="stat"><div class="stat-label">粗利率</div><div class="stat-value">{{ month.margin|pct }}</div></div>
+    <div class="stat"><div class="stat-label">販売した重さ</div><div class="stat-value">{{ month.grams|kg }}</div></div>
+  </div>
+</section>
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">焙煎豆の在庫</h2><a class="link" href="{% url 'inventory:coffee_list' %}">銘柄・商品</a></div>
+    {% if not cards %}<p class="empty">まだ焙煎豆の在庫はありません。</p>{% else %}
+    <ul class="rows">{% for card in cards %}
+      <li><a class="row" href="{% url 'inventory:coffee_list' %}#coffee-{{ card.coffee.pk }}">
+        <div class="row-main">
+          <div class="row-title"><span>{{ card.coffee.name }}</span>{% if card.latest %}{% level_chip card.latest %}{% endif %}</div>
+          <div class="row-meta">{% if card.oldest_days is not None %}いちばん古い焙煎から {{ card.oldest_days }}日{% else %}在庫なし{% endif %}{% if card.packs_text %}・{{ card.packs_text }}{% endif %}</div>
+        </div>
+        <div class="row-side"><div class="row-num">{{ card.remaining_g|grams }}</div></div>
+      </a></li>
+    {% endfor %}</ul>{% endif %}
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">生豆の在庫</h2><a class="link" href="{% url 'inventory:lot_list' %}">生豆ロット</a></div>
+    {% if not lots %}<p class="empty">在庫のある生豆ロットはありません。</p>{% else %}
+    <ul class="rows">{% for lot in lots %}
+      <li><a class="row" href="{% url 'inventory:lot_detail' lot.pk %}">
+        <div class="row-main"><div class="row-title">{{ lot.name }}</div><div class="row-meta">仕入れ {{ lot.purchased_on|ymd }}・{{ lot.price_per_kg|yen }}/kg</div></div>
+        <div class="row-side"><div class="row-num">{{ lot.remaining_g|kg }}</div><div class="row-sub">仕入れ {{ lot.weight_g|kg:1 }}</div></div>
+        <div class="row-meter">{% meter lot.remaining_g lot.weight_g %}</div>
+      </a></li>
+    {% endfor %}</ul>{% endif %}
+  </section>
+</div>
 {% endblock %}

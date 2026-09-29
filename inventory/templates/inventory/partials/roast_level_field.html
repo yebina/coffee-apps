@@ -1,0 +1,8 @@
+{% load fmt %}<div class="field" id="roast-level-field"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <div class="field-label" id="roast-level-label">焙煎度</div>
+  <div class="levels" role="radiogroup" aria-labelledby="roast-level-label">
+    {% with current=form.roast_level.value %}{% for value, label in levels %}
+    <label class="level"><input type="radio" name="roast_level" value="{{ value }}"{% if current == value %} checked{% endif %}><span class="bean" style="background:{{ value|level_color }}"></span><span>{{ label }}</span></label>
+    {% endfor %}{% endwith %}
+  </div>
+</div>

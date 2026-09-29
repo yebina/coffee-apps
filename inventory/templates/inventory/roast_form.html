@@ -1,0 +1,105 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}{% if roast %}焙煎記録を編集{% else %}焙煎を記録{% endif %}・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main">
+    {% if roast %}<a class="back" href="{% url 'inventory:roast_detail' roast.pk %}">‹ この焙煎記録</a>{% else %}<a class="back" href="{% url 'inventory:roast_list' %}">‹ 焙煎記録</a>{% endif %}
+    <div class="eyebrow">{% if roast %}{{ roast.roasted_at|ymd_hm }}{% else %}焙煎記録{% endif %}</div>
+    <h1 class="title">{% if roast %}焙煎記録を編集{% else %}焙煎を記録{% endif %}</h1>
+  </div>
+</div>
+<div class="form-layout">
+  <form class="form" method="post" novalidate
+        hx-post="{% url 'inventory:roast_preview' %}" hx-trigger="input delay:300ms from:.js-calc" hx-swap="none">
+    {% csrf_token %}
+    <input type="hidden" name="idempotency_key" value="{{ key }}">
+    {% if roast %}<input type="hidden" name="roast_id" value="{{ roast.pk }}">{% endif %}
+    {% include "inventory/partials/form_errors.html" %}
+    <section class="form-section">
+      <h2 class="panel-title">基本</h2>
+      <div class="grid">
+        <div class="field span-2">
+          <label class="field-label" for="id_green_lot">生豆ロット<span class="req">必須</span></label>
+          <select name="green_lot" id="id_green_lot" class="select"
+                  hx-post="{% url 'inventory:roast_preview' %}" hx-trigger="change" hx-include="closest form" hx-swap="none" hx-vals='{"lot_changed": "1"}'>
+            <option value="">選んでください</option>
+            {% with current=form.green_lot.value|stringformat:"s" %}{% for l in form.lots %}<option value="{{ l.pk }}"{% if current == l.pk|stringformat:"s" %} selected{% endif %}>{{ l.name }}（残り {{ l.remaining_g|kg }}）</option>{% endfor %}{% endwith %}
+          </select>
+          {% for error in form.green_lot.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+          {% include "inventory/partials/roast_lot_hint.html" %}
+        </div>
+        {% include "inventory/partials/roast_coffee_field.html" %}
+        {% include "inventory/partials/field.html" with field=form.roasted_at req=True %}
+        {% include "inventory/partials/field.html" with field=form.roaster %}
+      </div>
+    </section>
+    <details class="prev only-mobile">
+      <summary>前回の記録（同じ生豆ロット）</summary>
+      <div id="prev-mobile">{% include "inventory/partials/prev_roast.html" %}</div>
+    </details>
+    <section class="form-section">
+      <h2 class="panel-title">重量</h2>
+      <div class="grid grid-3 js-calc">
+        {% include "inventory/partials/field.html" with field=form.input_g label="投入量" req=True unit="g" %}
+        {% include "inventory/partials/field.html" with field=form.handpick_g unit="g" %}
+        {% include "inventory/partials/field.html" with field=form.output_g req=True unit="g" %}
+      </div>
+      {% include "inventory/partials/roast_calc_weight.html" %}
+    </section>
+    <section class="form-section">
+      <h2 class="panel-title">プロファイル</h2>
+      <div class="grid grid-3 js-calc">
+        {% for prefix, label, req, hint in time_fields %}
+        <div class="field">
+          <label class="field-label" for="id_{{ prefix }}_m">{{ label }}{% if req %}<span class="req">必須</span>{% endif %}</label>
+          <div class="minsec" role="group" aria-label="{{ label }}">
+            {% if prefix == "duration" %}{{ form.duration_m }}{% elif prefix == "first" %}{{ form.first_m }}{% else %}{{ form.second_m }}{% endif %}
+            <span class="minsec-colon" aria-hidden="true">:</span>
+            {% if prefix == "duration" %}{{ form.duration_sec }}{% elif prefix == "first" %}{{ form.first_sec }}{% else %}{{ form.second_sec }}{% endif %}
+          </div>
+          {% if prefix == "duration" %}{% for e in form.duration_m.errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% elif prefix == "first" %}{% for e in form.first_m.errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% else %}{% for e in form.second_m.errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% endif %}
+          <div class="hint">{{ hint }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% include "inventory/partials/roast_calc_profile.html" %}
+      {% include "inventory/partials/roast_level_field.html" %}
+      {% include "inventory/partials/field.html" with field=form.heat_notes %}
+      {% include "inventory/partials/field.html" with field=form.memo hint="気温・天気・反省点など" %}
+    </section>
+    <section class="form-section">
+      <div class="form-section-head"><h2 class="panel-title">焙煎後の特徴</h2><span class="muted small">試飲したあとで書き足せます</span></div>
+      {% include "inventory/partials/field.html" with field=form.tasting_notes %}
+      <div class="grid">
+        <div class="field">
+          <div class="field-label" id="roast-rating-label">評価</div>
+          <div class="stars" role="radiogroup" aria-labelledby="roast-rating-label">
+            {% with current=form.rating.value|stringformat:"s" %}
+            <span class="stars-radio">{% for n in "54321" %}<label class="star" aria-label="{{ n }} / 5"><input type="radio" name="rating" value="{{ n }}"{% if current == n %} checked{% endif %}>★</label>{% endfor %}</span>
+            <label class="star-clear"><input type="radio" name="rating" value=""{% if current == "" or current == "None" %} checked{% endif %}>未評価</label>
+            {% endwith %}
+          </div>
+        </div>
+        {% include "inventory/partials/field.html" with field=form.tasted_on %}
+      </div>
+    </section>
+    {% if loss_warning %}
+    <div class="alert alert-warn" role="alert" data-scroll>
+      <div class="alert-title">ロス率の確認</div>
+      <div>{{ loss_warning }}（ふだんの範囲は 5〜30%）</div>
+      <div class="alert-actions">
+        <a class="btn" href="#id_output_g">数字を直す</a>
+        <button class="btn btn-primary" name="confirm_loss" value="1">このまま保存する</button>
+      </div>
+    </div>
+    {% endif %}
+    <div class="form-actions">
+      <a class="btn" href="{% if roast %}{% url 'inventory:roast_detail' roast.pk %}{% else %}{% url 'inventory:roast_list' %}{% endif %}">キャンセル</a>
+      <button class="btn btn-primary">{% if roast %}保存する{% else %}記録する{% endif %}</button>
+    </div>
+  </form>
+  <aside class="form-aside">
+    <div class="prev"><div class="prev-title">前回の記録（同じ生豆ロット）</div><div id="prev-aside">{% include "inventory/partials/prev_roast.html" %}</div></div>
+  </aside>
+</div>
+{% endblock %}

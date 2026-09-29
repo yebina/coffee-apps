@@ -1,0 +1,92 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}{{ lot.name }}・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main">
+    <a class="back" href="{% url 'inventory:lot_list' %}">‹ 生豆ロット</a>
+    <div class="eyebrow">仕入れ {{ lot.purchased_on|ymd }}・{{ lot.supplier.name }}</div>
+    <h1 class="title">{{ lot.name }}</h1>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{% url 'inventory:lot_edit' lot.pk %}">編集</a>
+    <a class="btn" href="{% url 'inventory:lot_new' %}?copy={{ lot.pk }}">この豆をまた仕入れる</a>
+    <a class="btn" href="{% url 'inventory:adjust' %}?target=lot:{{ lot.pk }}">在庫調整</a>
+  </div>
+</div>
+<div class="chips">
+  {% if lot.country %}<span class="chip">{{ lot.country }}</span>{% endif %}
+  {% if lot.process %}<span class="chip">{{ lot.process }}</span>{% endif %}
+  {% if lot.rank %}<span class="chip">{{ lot.rank }}</span>{% endif %}
+  {% if lot.remaining_g <= 0 %}<span class="chip chip-off">使い切り</span>{% endif %}
+</div>
+<section class="panel panel-pad">
+  <div class="stock-head">
+    <div><div class="stat-label">残量</div><div class="big">{{ lot.remaining_g|kg }}</div><div class="muted small">{{ lot.remaining_g|grams }}（仕入れ {{ lot.weight_g|grams }}）</div></div>
+    <div><div class="stat-label">kg 単価（税抜）</div><div class="big">{{ lot.price_per_kg|yen }}</div><div class="muted small">（仕入れ値 {{ lot.price_yen|yen }} ＋ 送料など {{ lot.extra_cost_yen|yen }}）÷ {{ lot.weight_g|kg:1 }}</div></div>
+  </div>
+  {% meter lot.remaining_g lot.weight_g %}
+  <dl class="calc-list">
+    <div><dt>仕入れ重量</dt><dd>{{ lot.weight_g|grams }}</dd></div>
+    <div><dt>焙煎に使った量（投入量＋ハンドピック）</dt><dd>− {{ lot.used_g|grams }}</dd></div>
+    <div><dt>在庫調整</dt><dd>{{ lot.adjusted_g|signed_g }}</dd></div>
+    <div class="total"><dt>残量</dt><dd>{{ lot.remaining_g|grams }}</dd></div>
+  </dl>
+</section>
+<div class="two-col">
+  <section class="panel panel-pad">
+    <h2 class="panel-title">産地</h2>
+    <dl class="kv">
+      <dt>国</dt><dd>{{ lot.country|dash }}</dd>
+      <dt>エリア</dt><dd>{{ lot.area|dash }}</dd>
+      <dt>農園名</dt><dd>{{ lot.farm|dash }}</dd>
+      <dt>生産者</dt><dd>{{ lot.producer|dash }}</dd>
+      <dt>品種</dt><dd>{{ lot.variety|dash }}</dd>
+      <dt>生産処理</dt><dd>{{ lot.process|default_if_none:"—" }}</dd>
+      <dt>標高</dt><dd>{{ lot.altitude|dash }}</dd>
+      <dt>収穫年度</dt><dd>{{ lot.crop_year|dash }}</dd>
+      <dt>等級</dt><dd>{{ lot.grade|dash }}</dd>
+    </dl>
+  </section>
+  <section class="panel panel-pad">
+    <h2 class="panel-title">問屋の情報</h2>
+    <dl class="kv">
+      <dt>ランク</dt><dd>{{ lot.rank|default_if_none:"—" }}</dd>
+      <dt>カッピングプロファイル</dt><dd>{{ lot.cupping_profile|dash }}</dd>
+      <dt>カッピングスコア</dt><dd>{{ lot.cupping_score|dash }}</dd>
+      <dt>認証・受賞</dt><dd>{{ certifications|dash }}</dd>
+      <dt>包装</dt><dd>{{ lot.packaging|dash }}</dd>
+      <dt>商品説明・備考</dt><dd>{{ lot.description|dash }}</dd>
+    </dl>
+  </section>
+</div>
+<section class="panel panel-pad">
+  <h2 class="panel-title">基本</h2>
+  <dl class="kv">
+    <dt>問屋</dt><dd>{{ lot.supplier.name }}</dd>
+    <dt>問屋の商品名</dt><dd>{{ lot.product_name|dash }}</dd>
+    <dt>英文名</dt><dd>{{ lot.english_name|dash }}</dd>
+    <dt>商品コード</dt><dd>{{ lot.product_code|dash }}</dd>
+    <dt>商品ページ</dt><dd>{% if lot.product_url %}<a href="{{ lot.product_url }}" target="_blank" rel="noopener noreferrer">{{ lot.product_url }}</a>{% else %}<span class="muted">—</span>{% endif %}</dd>
+    <dt>仕入れ値（税抜）</dt><dd>{{ lot.price_yen|yen }}</dd>
+    <dt>送料などの経費（税抜）</dt><dd>{{ lot.extra_cost_yen|yen }}</dd>
+    <dt>メモ</dt><dd>{{ lot.memo|dash }}</dd>
+  </dl>
+</section>
+<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">このロットの焙煎記録</h2><span class="muted">{{ roasts|length }}件</span></div>
+  {% if not roasts %}<p class="empty">まだ焙煎記録はありません。</p>{% else %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>焙煎日</th><th>銘柄</th><th class="r">投入量</th><th class="r">焙煎後</th><th class="r">ロス率</th><th class="r">焙煎時間</th><th>焙煎度</th></tr></thead>
+    <tbody>{% for r in roasts %}<tr>
+      <td class="nw"><a class="cell-link" href="{% url 'inventory:roast_detail' r.pk %}">{{ r.roasted_at|ymd }}</a></td>
+      <td>{{ r.coffee.name }}</td><td class="r">{{ r.input_g|grams }}</td><td class="r">{{ r.output_g|grams }}</td><td class="r">{{ r.loss_rate|pct }}</td><td class="r mono">{{ r.duration_s|mmss }}</td><td class="nw">{{ r.get_roast_level_display|dash }}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>{% endif %}
+</section>
+{% include "inventory/partials/adj_history.html" %}
+{% if can_delete %}
+<form class="danger-zone" method="post" action="{% url 'inventory:lot_delete' lot.pk %}">{% csrf_token %}
+  <button class="btn btn-danger" data-confirm="もう一度押すと削除します">このロットを削除</button>
+</form>
+{% endif %}
+{% endblock %}

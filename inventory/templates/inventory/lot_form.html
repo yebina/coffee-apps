@@ -1,0 +1,102 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}{% if lot %}ロットを編集{% else %}仕入れを登録{% endif %}・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main">
+    {% if lot %}<a class="back" href="{% url 'inventory:lot_detail' lot.pk %}">‹ {{ lot.name }}</a>{% else %}<a class="back" href="{% url 'inventory:lot_list' %}">‹ 生豆ロット</a>{% endif %}
+    <div class="eyebrow">{% if copy_from %}「{{ copy_from.name }}」をコピーして登録{% else %}生豆ロット{% endif %}</div>
+    <h1 class="title">{% if lot %}ロットを編集{% else %}仕入れを登録{% endif %}</h1>
+  </div>
+</div>
+<div class="form form-narrow">
+  {% include "inventory/partials/form_errors.html" %}
+  {% if not lot %}
+  <form class="form-section" method="get" action="{% url 'inventory:lot_new' %}">
+    <div class="form-section-head"><h2 class="panel-title">前のロットからコピー</h2><span class="muted small">同じ豆をまた仕入れたとき</span></div>
+    <div class="inline-add">
+      <label class="sr-only" for="lot-copy-from">コピー元のロット</label>
+      <select id="lot-copy-from" class="select" name="copy">
+        <option value="">コピー元のロットを選ぶ</option>
+        {% for src in copy_sources %}<option value="{{ src.pk }}"{% if copy_from.pk == src.pk %} selected{% endif %}>{{ src.name }}（{{ src.purchased_on|ymd }}）</option>{% endfor %}
+      </select>
+      <button class="btn">コピーする</button>
+    </div>
+    <p class="hint">産地と問屋の情報をコピーします。仕入れ日・重量・金額・メモはコピーしません。</p>
+  </form>
+  {% endif %}
+  <form class="form" method="post" novalidate>
+    {% csrf_token %}
+    <section class="form-section">
+      <h2 class="panel-title">基本</h2>
+      <div class="grid">
+        {% include "inventory/partials/field.html" with field=form.name label="ロット名" req=True wide=True hint="一覧や選択肢に出す短い名前です" %}
+        {% include "inventory/partials/field.html" with field=form.purchased_on label="仕入れ日" req=True %}
+        <div class="field">
+          <label class="field-label" for="{{ form.supplier_choice.id_for_label }}">問屋<span class="req">必須</span></label>
+          {{ form.supplier_choice }}
+          <div class="new-input">{{ form.new_supplier }}</div>
+          {% for error in form.supplier_choice.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+          {% for error in form.new_supplier.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+        {% include "inventory/partials/field.html" with field=form.product_name wide=True %}
+        {% include "inventory/partials/field.html" with field=form.english_name %}
+        {% include "inventory/partials/field.html" with field=form.product_code hint="再注文のときに使います" %}
+        {% include "inventory/partials/field.html" with field=form.product_url wide=True hint="商品ページはあとで消えることがあるので、内容もこの画面に残します" %}
+      </div>
+    </section>
+    <section class="form-section">
+      <div class="form-section-head"><h2 class="panel-title">数量・金額</h2><span class="muted small">税抜</span></div>
+      <div class="grid grid-3" hx-post="{% url 'inventory:lot_preview' %}" hx-trigger="input delay:300ms" hx-target="#kg-price" hx-swap="outerHTML">
+        {% include "inventory/partials/field.html" with field=form.weight_kg req=True unit="kg" hint=weight_hint %}
+        {% include "inventory/partials/field.html" with field=form.price_yen req=True unit="円" %}
+        {% include "inventory/partials/field.html" with field=form.extra_cost_yen unit="円" hint="原価に含めます" %}
+      </div>
+      {% partialdef kg_price inline %}
+      <div class="calc" id="kg-price" aria-live="polite">
+        <div class="calc-item"><span>kg 単価（自動計算）</span><strong>{% if kg_price %}{{ kg_price|yen }}/kg{% else %}—{% endif %}</strong></div>
+        <div class="calc-item"><span>g 単価</span><strong>{% if kg_price %}{{ kg_price|per_kg_to_g|per_g }}{% else %}—{% endif %}</strong></div>
+      </div>
+      {% endpartialdef %}
+    </section>
+    <section class="form-section">
+      <h2 class="panel-title">産地</h2>
+      <div class="grid">
+        {% include "inventory/partials/field.html" with field=form.country req=True %}
+        {% include "inventory/partials/field.html" with field=form.area %}
+        {% include "inventory/partials/field.html" with field=form.farm hint="農園、ウォッシングステーションなど" %}
+        {% include "inventory/partials/field.html" with field=form.producer hint="農園主や生産者団体の名前" %}
+        {% include "inventory/partials/field.html" with field=form.variety %}
+        {% include "inventory/partials/field.html" with field=form.process %}
+        {% include "inventory/partials/field.html" with field=form.altitude %}
+        {% include "inventory/partials/field.html" with field=form.crop_year %}
+        {% include "inventory/partials/field.html" with field=form.grade hint="生産国の規格による等級（G1、SHB、AA など）" %}
+      </div>
+      {% for name, values in suggestions.items %}<datalist id="dl-{{ name }}">{% for v in values %}<option value="{{ v }}"></option>{% endfor %}</datalist>{% endfor %}
+    </section>
+    <section class="form-section">
+      <h2 class="panel-title">問屋の情報</h2>
+      <div class="grid">
+        {% include "inventory/partials/field.html" with field=form.rank hint="問屋による格付け" %}
+        {% include "inventory/partials/field.html" with field=form.cupping_score %}
+        {% include "inventory/partials/field.html" with field=form.cupping_profile wide=True hint="問屋による風味の評価" %}
+        <div class="field span-2">
+          <div class="field-label" id="lot-certs-label">認証・受賞</div>
+          <div class="checks" role="group" aria-labelledby="lot-certs-label">
+            {% for cb in form.certifications %}<label class="check">{{ cb.tag }}<span>{{ cb.choice_label }}</span></label>{% endfor %}
+          </div>
+        </div>
+        {% include "inventory/partials/field.html" with field=form.packaging hint="問屋の表記のまま（例：24kg バキューム）" %}
+        {% include "inventory/partials/field.html" with field=form.description wide=True hint="問屋の商品説明や備考欄を貼り付けられます" %}
+      </div>
+    </section>
+    <section class="form-section">
+      <h2 class="panel-title">その他</h2>
+      {% include "inventory/partials/field.html" with field=form.memo hint="保管場所など" %}
+    </section>
+    <div class="form-actions">
+      <a class="btn" href="{% if lot %}{% url 'inventory:lot_detail' lot.pk %}{% else %}{% url 'inventory:lot_list' %}{% endif %}">キャンセル</a>
+      <button class="btn btn-primary">{% if lot %}保存する{% else %}登録する{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

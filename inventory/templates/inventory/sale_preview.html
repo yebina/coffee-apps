@@ -1,0 +1,4 @@
+{% if formset %}{% include "inventory/partials/sale_items.html" %}{% endif %}
+{% include "inventory/partials/sale_calc.html" %}
+{% include "inventory/partials/sale_stock.html" %}
+{% load fmt %}{% if not formset %}{% for amount in row_amounts %}<span id="sale-amount-{{ forloop.counter0 }}" hx-swap-oob="true">{{ amount|yen }}</span>{% endfor %}{% endif %}

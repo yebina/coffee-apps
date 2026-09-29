@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}集計・{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-head-main"><div class="eyebrow">見る</div><h1 class="title">集計</h1></div></div>
+<section class="panel panel-pad">
+  <div class="section-head"><h2 class="panel-title">月別の売上</h2><span class="muted small">税抜・棒にカーソルを合わせると粗利も出ます</span></div>
+  {% if not chart %}<p class="muted">まだ販売の記録がありません。</p>{% else %}
+  <div class="colchart" role="group" aria-label="月別の売上（税抜）">
+    {% for m in chart %}
+    <div class="col" tabindex="0" aria-label="{{ m.ym|month_label }}：売上 {{ m.amount|yen }}、粗利 {{ m.profit|yen }}">
+      <div class="col-plot" style="height:174px">
+        <div class="tip"><strong>{{ m.ym|month_label }}</strong><span>売上 {{ m.amount|yen }}</span><span>粗利 {{ m.profit|yen }}（{{ m.margin|pct }}）</span><span>{{ m.count }}件・{{ m.grams|kg }}</span></div>
+        <div class="col-val">{% if compact %}{{ m.amount|yen_man }}{% else %}{{ m.amount|yen }}{% endif %}</div>
+        <div class="col-bar" style="height:{{ m.bar_px }}px"></div>
+      </div>
+      <div class="col-label">{{ m.ym.1 }}月</div>
+    </div>
+    {% endfor %}
+  </div>{% endif %}
+</section>
+<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">月別</h2><span class="muted small">税抜</span></div>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>月</th><th class="r">売上</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th><th class="r">販売した重さ</th><th class="r">件数</th></tr></thead>
+    <tbody>{% for m in month_rows %}<tr><td class="nw">{{ m.ym|month_label }}</td><td class="r">{{ m.amount|yen }}</td><td class="r">{{ m.cost|yen }}</td><td class="r">{{ m.profit|yen }}</td><td class="r">{{ m.margin|pct }}</td><td class="r">{{ m.grams|kg }}</td><td class="r">{{ m.count }}</td></tr>{% empty %}<tr><td colspan="7" class="muted">まだ販売の記録がありません。</td></tr>{% endfor %}</tbody>
+    {% if month_rows %}<tfoot><tr><td>合計</td><td class="r">{{ total.amount|yen }}</td><td class="r">{{ total.cost|yen }}</td><td class="r">{{ total.profit|yen }}</td><td class="r">{{ total.margin|pct }}</td><td class="r">{{ total.grams|kg }}</td><td class="r">{{ total.count }}</td></tr></tfoot>{% endif %}
+  </table></div>
+</section>
+<section class="panel">
+  <div class="panel-head panel-head-wrap"><h2 class="panel-title">銘柄別</h2>
+    <div class="seg" role="group" aria-label="期間">{% for value, label in periods %}<a class="seg-btn{% if value == period %} is-on{% endif %}" href="?period={{ value }}">{{ label }}</a>{% endfor %}</div>
+  </div>
+  {% if not coffee_rows %}<p class="empty">この期間の販売はありません。</p>{% else %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>銘柄</th><th class="r">販売した重さ</th><th class="r">売上</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead>
+    <tbody>{% for r in coffee_rows %}<tr><td>{{ r.coffee.name }}</td><td class="r">{{ r.grams|grams }}</td><td class="r">{{ r.amount|yen }}</td><td class="r">{{ r.profit|yen }}</td><td class="r">{{ r.margin|pct }}</td></tr>{% endfor %}</tbody>
+    <tfoot><tr><td>合計</td><td class="r">{{ coffee_total.grams|grams }}</td><td class="r">{{ coffee_total.amount|yen }}</td><td class="r">{{ coffee_total.profit|yen }}</td><td class="r">{{ coffee_total.margin|pct }}</td></tr></tfoot>
+  </table></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}生豆ロット・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main"><div class="eyebrow">在庫</div><h1 class="title">生豆ロット</h1></div>
+  <div class="actions"><a class="btn btn-primary" href="{% url 'inventory:lot_new' %}">仕入れを登録</a></div>
+</div>
+<form class="toolbar" method="get">
+  <div class="seg" role="group" aria-label="表示するロット">
+    {% for value, label in filters %}<a class="seg-btn{% if value == current %} is-on{% endif %}" href="?f={{ value }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}"{% if value == current %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+  </div>
+  <input type="hidden" name="f" value="{{ current }}">
+  <label class="sr-only" for="lot-search">ロットを探す</label>
+  <input id="lot-search" class="input search" type="search" name="q" value="{{ q }}" placeholder="名前・国・品種で探す">
+</form>
+<div class="panel">
+  {% if not lots %}<p class="empty">該当するロットはありません。</p>{% else %}
+  <ul class="rows">{% for lot in lots %}
+    <li><a class="row" href="{% url 'inventory:lot_detail' lot.pk %}">
+      <div class="row-main">
+        <div class="row-title"><span>{{ lot.name }}</span>{% if lot.rank %}<span class="chip">{{ lot.rank }}</span>{% endif %}</div>
+        <div class="row-meta">{{ lot.supplier.name }}・{{ lot.country }}{% if lot.process %}・{{ lot.process }}{% endif %}・仕入れ {{ lot.purchased_on|ymd }}</div>
+      </div>
+      <div class="row-side"><div class="row-num">{% if lot.remaining_g > 0 %}{{ lot.remaining_g|kg }}{% else %}使い切り{% endif %}</div><div class="row-sub">{{ lot.price_per_kg|yen }}/kg</div></div>
+      <div class="row-meter">{% meter lot.remaining_g lot.weight_g %}</div>
+    </a></li>
+  {% endfor %}</ul>{% endif %}
+</div>
+{% endblock %}

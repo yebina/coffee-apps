@@ -1,0 +1,101 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}{{ roast.coffee.name }}・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main">
+    <a class="back" href="{% url 'inventory:roast_list' %}">‹ 焙煎記録</a>
+    <div class="eyebrow">{{ roast.roasted_at|ymd_hm }}・{{ roast.roaster|default:"焙煎機 未入力" }}</div>
+    <h1 class="title">{{ roast.coffee.name }}</h1>
+  </div>
+  <div class="actions">
+    <a class="btn{% if not roast.tasting_notes %} btn-primary{% endif %}" href="{% url 'inventory:roast_edit' roast.pk %}">{% if roast.tasting_notes %}編集{% else %}特徴を書く・編集{% endif %}</a>
+    <a class="btn" href="{% url 'inventory:adjust' %}?target=roast:{{ roast.pk }}">在庫調整</a>
+  </div>
+</div>
+<div class="chips">
+  {% level_chip roast %}
+  <a class="chip chip-link" href="{% url 'inventory:lot_detail' roast.green_lot_id %}">生豆ロット：{{ roast.green_lot.name }}</a>
+</div>
+<section class="panel panel-pad">
+  <h2 class="panel-title">重量</h2>
+  <div class="figs">
+    <div><div class="fig-label">投入量</div><div class="fig-value">{{ roast.input_g|grams }}</div></div>
+    <div><div class="fig-label">ハンドピックで除いた量</div><div class="fig-value">{{ roast.handpick_g|grams }}</div></div>
+    <div><div class="fig-label">焙煎後重量</div><div class="fig-value">{{ roast.output_g|grams }}</div></div>
+    <div><div class="fig-label">ロス率</div><div class="fig-value">{{ roast.loss_rate|pct }}</div><div class="fig-note">（投入量 − 焙煎後重量）÷ 投入量</div></div>
+  </div>
+</section>
+<section class="panel panel-pad">
+  <h2 class="panel-title">プロファイル</h2>
+  <div class="figs">
+    <div><div class="fig-label">焙煎時間</div><div class="fig-value mono">{{ roast.duration_s|mmss }}</div><div class="fig-note">投入から排出まで</div></div>
+    <div><div class="fig-label">1ハゼ開始</div><div class="fig-value mono">{{ roast.first_crack_s|mmss }}</div></div>
+    <div><div class="fig-label">2ハゼ開始</div><div class="fig-value mono">{{ roast.second_crack_s|mmss }}</div></div>
+    <div><div class="fig-label">1ハゼ後の時間</div><div class="fig-value mono">{{ roast.development_s|mmss }}</div>{% if roast.development_ratio %}<div class="fig-note">焙煎時間の {{ roast.development_ratio|pct }}（DTR）</div>{% endif %}</div>
+  </div>
+  {% if timeline %}
+  <div>
+    <div class="tl" aria-hidden="true">
+      <div class="tl-track">{% if timeline.first %}<div class="tl-dev" style="left:{{ timeline.first }}%"></div>{% endif %}</div>
+      {% if timeline.first %}<div class="tl-mark" style="left:{{ timeline.first }}%"></div>{% endif %}
+      {% if timeline.second %}<div class="tl-mark tl-mark-2" style="left:{{ timeline.second }}%"></div>{% endif %}
+    </div>
+    <div class="tl-legend">
+      <span><i class="key key-dry"></i>投入〜1ハゼ <span class="mono">{{ roast.first_crack_s|mmss }}</span></span>
+      {% if roast.development_s is not None %}<span><i class="key key-dev"></i>1ハゼ後 <span class="mono">{{ roast.development_s|mmss }}</span>（{{ roast.development_ratio|pct }}）</span>{% endif %}
+      {% if roast.second_crack_s is not None %}<span><i class="key key-mark"></i>2ハゼ開始 <span class="mono">{{ roast.second_crack_s|mmss }}</span></span>{% endif %}
+      <span>排出 <span class="mono">{{ roast.duration_s|mmss }}</span></span>
+    </div>
+  </div>
+  {% endif %}
+  <dl class="kv">
+    <dt>焙煎度</dt><dd>{{ roast.get_roast_level_display|dash }}</dd>
+    <dt>火力・操作のメモ</dt><dd>{{ roast.heat_notes|dash }}</dd>
+    <dt>メモ</dt><dd>{{ roast.memo|dash }}</dd>
+  </dl>
+</section>
+<div class="two-col">
+  <section class="panel panel-pad">
+    <h2 class="panel-title">焙煎後の特徴</h2>
+    {% if roast.tasting_notes or roast.rating %}
+    <dl class="kv">
+      <dt>特徴</dt><dd>{{ roast.tasting_notes|dash }}</dd>
+      <dt>評価</dt><dd>{% rating_stars roast.rating %}</dd>
+      <dt>試飲日</dt><dd>{{ roast.tasted_on|ymd }}</dd>
+    </dl>
+    {% else %}<p class="muted">まだ書いていません。試飲したら「特徴を書く・編集」から書き足せます。</p>{% endif %}
+  </section>
+  <section class="panel panel-pad">
+    <h2 class="panel-title">原価と在庫</h2>
+    <dl class="calc-list">
+      <div><dt>生豆使用量（投入量＋ハンドピック）</dt><dd>{{ roast.green_used_g|grams }}</dd></div>
+      <div><dt>生豆の g 単価</dt><dd>{{ roast.green_lot.price_per_g|per_g }}</dd></div>
+      <div class="total"><dt>原価（税抜）</dt><dd>{{ roast.cost_yen|yen }}</dd></div>
+      <div><dt>1g あたり原価</dt><dd>{{ roast.cost_per_g|per_g }}</dd></div>
+    </dl>
+    <dl class="calc-list">
+      <div><dt>焙煎後重量</dt><dd>{{ roast.output_g|grams }}</dd></div>
+      <div><dt>販売で出た量</dt><dd>− {{ roast.allocated_g|grams }}</dd></div>
+      <div><dt>在庫調整</dt><dd>{{ roast.adjusted_g|signed_g }}</dd></div>
+      <div class="total"><dt>残量</dt><dd>{{ roast.remaining_g|grams }}</dd></div>
+    </dl>
+  </section>
+</div>
+<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">この焙煎の豆を出した販売</h2><span class="muted">{{ uses|length }}件</span></div>
+  {% if not uses %}<p class="empty">まだ販売に使われていません。</p>{% else %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>販売日</th><th>商品</th><th>チャネル</th><th class="r">重さ</th></tr></thead>
+    <tbody>{% for u in uses %}<tr>
+      <td class="nw"><a class="cell-link" href="{% url 'inventory:sale_detail' u.sale_item.sale_id %}">{{ u.sale_item.sale.sold_on|ymd }}</a></td>
+      <td>{{ u.sale_item.product }}×{{ u.sale_item.quantity }}</td><td class="nw">{{ u.sale_item.sale.channel }}</td><td class="r">{{ u.weight_g|grams }}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>{% endif %}
+</section>
+{% if adjustments %}{% include "inventory/partials/adj_history.html" %}{% endif %}
+{% if can_delete %}
+<form class="danger-zone" method="post" action="{% url 'inventory:roast_delete' roast.pk %}">{% csrf_token %}
+  <button class="btn btn-danger" data-confirm="もう一度押すと削除します">この焙煎記録を削除</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -34,6 +34,12 @@ uv run ruff format .
 | `inventory/models.py` | テーブル。残量は保存せず、`with_stock()` で計算して付ける |
 | `inventory/calc.py` | 計算ルール（仕様書「5」）。表示するときだけ四捨五入する |
 | `inventory/services.py` | 在庫を動かす処理（焙煎・販売・在庫調整）。行をロックしてから残量を確かめる |
+| `inventory/forms.py` | 入力フォーム。全角数字や桁区切りのカンマも受け付ける |
+| `inventory/views/` | 画面ごとの処理。`*_preview` は入力中の計算を返す（htmx） |
+| `inventory/templates/` | 画面の HTML。`partials/` は htmx で差し替える部品 |
+| `inventory/templatetags/fmt.py` | 金額・重さ・率・時間の表示の書式 |
+| `static/css/app.css` | デモ（docs/demo.html）の CSS をそのまま移したもの |
 | `inventory/admin.py` | 管理画面。問屋と選択肢の編集に使う |
 
 画面の処理から在庫を直接書き換えず、必ず `services.py` を通す。
+入力中の計算（ロス率、kg 単価、在庫のチェック、引当の予定）も、保存と同じ `calc.py`・`services.py` で行う。

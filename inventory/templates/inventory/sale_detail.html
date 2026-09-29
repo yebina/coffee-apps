@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}{{ sale.sold_on|ymd }} の販売・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main">
+    <a class="back" href="{% url 'inventory:sale_list' %}">‹ 販売</a>
+    <div class="eyebrow">{{ sale.channel }}{% if sale.customer %}・{{ sale.customer }}{% endif %}</div>
+    <h1 class="title">{{ sale.sold_on|ymd }} の販売</h1>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{% url 'inventory:sale_edit' sale.pk %}">編集</a>
+    <form class="inline-form" method="post" action="{% url 'inventory:sale_delete' sale.pk %}">{% csrf_token %}<button class="btn btn-danger" data-confirm="もう一度押すと削除します">削除</button></form>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-label">金額（税抜）</div><div class="stat-value">{{ sale.amount_yen|yen }}</div></div>
+  <div class="stat"><div class="stat-label">原価</div><div class="stat-value">{{ sale.cost_yen|yen }}</div></div>
+  <div class="stat"><div class="stat-label">粗利</div><div class="stat-value">{{ sale.gross_profit_yen|yen }}</div></div>
+  <div class="stat"><div class="stat-label">粗利率</div><div class="stat-value">{{ margin|pct }}</div></div>
+</div>
+<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">明細</h2><span class="muted small">税抜</span></div>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>商品</th><th class="r">数量</th><th class="r">単価</th><th class="r">金額</th><th class="r">原価</th><th class="r">粗利</th></tr></thead>
+    <tbody>{% for it in items %}<tr>
+      <td>{{ it.product }}</td><td class="r">{{ it.quantity }}</td><td class="r">{{ it.unit_price_yen|yen }}</td><td class="r">{{ it.amount_yen|yen }}</td><td class="r">{{ it.cost_yen|yen }}</td><td class="r">{{ it.gross_profit_yen|yen }}</td>
+    </tr>{% endfor %}</tbody>
+    <tfoot><tr><td>合計</td><td class="r">{{ quantity }}</td><td></td><td class="r">{{ sale.amount_yen|yen }}</td><td class="r">{{ sale.cost_yen|yen }}</td><td class="r">{{ sale.gross_profit_yen|yen }}</td></tr></tfoot>
+  </table></div>
+</section>
+<section class="panel">
+  <div class="panel-head"><h2 class="panel-title">引当（どの焙煎の豆を出したか）</h2></div>
+  <p class="panel-note">焙煎日の古い順に在庫から出しています。明細の原価 ＝ 重さ × その焙煎の 1g あたり原価 ＋ 包材費 × 数量。</p>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>商品</th><th>焙煎記録</th><th class="r">重さ</th><th class="r">1g あたり原価</th><th class="r">豆の原価</th></tr></thead>
+    <tbody>{% for it in items %}{% for a in it.allocations.all %}<tr>
+      <td>{{ it.product }}×{{ it.quantity }}</td>
+      <td><a class="cell-link" href="{% url 'inventory:roast_detail' a.roast_id %}">{{ a.roast.roasted_at|ymd }} 焙煎</a><div class="row-meta">{{ a.roast.green_lot.name }}</div></td>
+      <td class="r">{{ a.weight_g|grams }}</td><td class="r">{{ a.roast.cost_per_g|per_g }}</td><td class="r">{{ a.weight_g|times_dec:a.roast.cost_per_g|yen }}</td>
+    </tr>{% endfor %}{% endfor %}</tbody>
+  </table></div>
+</section>
+{% if sale.memo %}<section class="panel panel-pad"><h2 class="panel-title">メモ</h2><p class="prewrap">{{ sale.memo }}</p></section>{% endif %}
+{% endblock %}

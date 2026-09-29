@@ -1,0 +1,1 @@
+{% load fmt %}<div class="hint" id="roast-lot-hint"{% if oob %} hx-swap-oob="true"{% endif %}>{% if lot %}残り {{ available|grams }}・{{ lot.price_per_kg|yen }}/kg（税抜）{% else %}残量のあるロットから選びます{% endif %}</div>

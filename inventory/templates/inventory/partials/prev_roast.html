@@ -1,0 +1,15 @@
+{% load fmt %}{% if not prev %}<p class="muted small prev-body">このロットの焙煎記録はまだありません。</p>{% else %}
+<div class="prev-body">
+  <div class="muted small">{{ prev.roasted_at|ymd_hm }}・{{ prev.coffee.name }}</div>
+  <dl class="calc-list small">
+    <div><dt>投入量 → 焙煎後</dt><dd>{{ prev.input_g|num }} → {{ prev.output_g|grams }}</dd></div>
+    <div><dt>ハンドピック</dt><dd>{{ prev.handpick_g|grams }}</dd></div>
+    <div><dt>ロス率</dt><dd>{{ prev.loss_rate|pct }}</dd></div>
+    <div><dt>焙煎時間</dt><dd class="mono">{{ prev.duration_s|mmss }}</dd></div>
+    <div><dt>1ハゼ開始</dt><dd class="mono">{{ prev.first_crack_s|mmss }}</dd></div>
+    <div><dt>1ハゼ後</dt><dd><span class="mono">{{ prev.development_s|mmss }}</span>{% if prev.development_ratio %}（{{ prev.development_ratio|pct }}）{% endif %}</dd></div>
+    <div><dt>焙煎度</dt><dd>{{ prev.get_roast_level_display|dash }}</dd></div>
+  </dl>
+  {% if prev.heat_notes %}<p class="small"><span class="muted">火力・操作：</span>{{ prev.heat_notes }}</p>{% endif %}
+  {% if prev.tasting_notes %}<p class="small"><span class="muted">特徴：</span>{{ prev.tasting_notes }}</p>{% endif %}
+</div>{% endif %}

@@ -1,0 +1,6 @@
+{% include "inventory/partials/roast_calc_weight.html" %}
+{% include "inventory/partials/roast_calc_profile.html" %}
+{% include "inventory/partials/roast_lot_hint.html" %}
+<div id="prev-aside" hx-swap-oob="innerHTML">{% include "inventory/partials/prev_roast.html" %}</div>
+<div id="prev-mobile" hx-swap-oob="innerHTML">{% include "inventory/partials/prev_roast.html" %}</div>
+{% if preset_form %}{% with form=preset_form %}{% include "inventory/partials/roast_coffee_field.html" %}{% include "inventory/partials/roast_level_field.html" %}{% endwith %}{% endif %}

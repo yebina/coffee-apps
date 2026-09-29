@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% load fmt %}
+{% block title %}焙煎記録・{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-head-main"><div class="eyebrow">記録する</div><h1 class="title">焙煎記録</h1></div>
+  <div class="actions"><a class="btn btn-primary" href="{% url 'inventory:roast_new' %}">焙煎を記録</a></div>
+</div>
+<form class="toolbar" method="get">
+  <label class="sr-only" for="roast-filter-lot">生豆ロットで絞り込む</label>
+  <select id="roast-filter-lot" class="select select-auto" name="lot" data-autosubmit>
+    <option value="">すべての生豆ロット</option>
+    {% for lot in lots %}<option value="{{ lot.pk }}"{% if lot_id == lot.pk|stringformat:"d" %} selected{% endif %}>{{ lot.name }}</option>{% endfor %}
+  </select>
+  <label class="sr-only" for="roast-filter-coffee">銘柄で絞り込む</label>
+  <select id="roast-filter-coffee" class="select select-auto" name="coffee" data-autosubmit>
+    <option value="">すべての銘柄</option>
+    {% for c in coffees %}<option value="{{ c.pk }}"{% if coffee_id == c.pk|stringformat:"d" %} selected{% endif %}>{{ c.name }}</option>{% endfor %}
+  </select>
+  <noscript><button class="btn">絞り込む</button></noscript>
+</form>
+<div class="panel">
+  {% if not roasts %}<p class="empty">該当する焙煎記録はありません。</p>{% else %}
+  <ul class="rows">{% for r in roasts %}
+    <li><a class="row" href="{% url 'inventory:roast_detail' r.pk %}">
+      <div class="row-main">
+        <div class="row-title"><span>{{ r.coffee.name }}</span>{% level_chip r %}{% if not r.tasting_notes %}<span class="chip chip-warn">特徴 未記入</span>{% endif %}</div>
+        <div class="row-meta">{{ r.roasted_at|ymd_hm }}・{{ r.green_lot.name }}</div>
+      </div>
+      <div class="row-side"><div class="row-num">{{ r.input_g|num }} → {{ r.output_g|grams }}</div><div class="row-sub">ロス {{ r.loss_rate|pct }}・<span class="mono">{{ r.duration_s|mmss }}</span></div></div>
+    </a></li>
+  {% endfor %}</ul>{% endif %}
+</div>
+{% endblock %}

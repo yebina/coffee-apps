@@ -1,16 +1,74 @@
-<!doctype html>
+{% load static %}<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}焙煎豆の在庫{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{% endblock %}豆帳</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+  <meta name="theme-color" content="#6B3F27">
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
 </head>
-<body>
-  {% if user.is_authenticated %}
-  <header>
-    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button>ログアウト</button></form>
-  </header>
-  {% endif %}
-  <main>{% block content %}{% endblock %}</main>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{% block body %}
+<div class="shell">
+  <aside class="side">
+    <div class="brand">{% include "inventory/partials/icon.html" with name="bean" size=24 %}<span class="brand-name">豆帳</span></div>
+    <div class="side-cta">
+      <a class="btn btn-primary btn-block" href="{% url 'inventory:roast_new' %}">焙煎を記録</a>
+      <a class="btn btn-block" href="{% url 'inventory:sale_new' %}">販売を記録</a>
+    </div>
+    <nav class="side-nav" aria-label="メニュー">
+      <div class="nav-group">
+        <a class="nav-item{% if nav_section == 'home' %} is-active{% endif %}" href="{% url 'inventory:home' %}"{% if nav_section == 'home' %} aria-current="page"{% endif %}>ホーム</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">記録する</div>
+        <a class="nav-item{% if nav_section == 'roasts' %} is-active{% endif %}" href="{% url 'inventory:roast_list' %}">焙煎記録</a>
+        <a class="nav-item{% if nav_section == 'sales' %} is-active{% endif %}" href="{% url 'inventory:sale_list' %}">販売</a>
+        <a class="nav-item{% if nav_section == 'adjust' %} is-active{% endif %}" href="{% url 'inventory:adjust' %}">在庫調整</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">在庫</div>
+        <a class="nav-item{% if nav_section == 'lots' %} is-active{% endif %}" href="{% url 'inventory:lot_list' %}">生豆ロット</a>
+        <a class="nav-item{% if nav_section == 'coffees' %} is-active{% endif %}" href="{% url 'inventory:coffee_list' %}">銘柄・商品</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">見る</div>
+        <a class="nav-item{% if nav_section == 'reports' %} is-active{% endif %}" href="{% url 'inventory:report' %}">集計</a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn btn-quiet btn-small">ログアウト</button></form>
+    </div>
+  </aside>
+  <div class="main-col">
+    <header class="topbar">
+      <div class="brand">{% include "inventory/partials/icon.html" with name="bean" size=22 %}<span class="brand-name">豆帳</span></div>
+      <a class="btn btn-primary btn-small" href="{% url 'inventory:roast_new' %}">焙煎を記録</a>
+    </header>
+    <main class="main">
+      <div class="main-inner">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+  <nav class="tabbar" aria-label="メニュー">
+    <a class="tab{% if nav_section == 'home' %} is-active{% endif %}" href="{% url 'inventory:home' %}">{% include "inventory/partials/icon.html" with name="home" %}<span>ホーム</span></a>
+    <a class="tab{% if nav_section == 'roasts' %} is-active{% endif %}" href="{% url 'inventory:roast_list' %}">{% include "inventory/partials/icon.html" with name="flame" %}<span>焙煎</span></a>
+    <a class="tab{% if nav_section == 'sales' %} is-active{% endif %}" href="{% url 'inventory:sale_list' %}">{% include "inventory/partials/icon.html" with name="tag" %}<span>販売</span></a>
+    <a class="tab{% if nav_section == 'lots' %} is-active{% endif %}" href="{% url 'inventory:lot_list' %}">{% include "inventory/partials/icon.html" with name="bean" %}<span>生豆</span></a>
+    <a class="tab{% if nav_in_menu %} is-active{% endif %}" href="{% url 'inventory:menu' %}">{% include "inventory/partials/icon.html" with name="more" %}<span>その他</span></a>
+  </nav>
+  {% for message in messages %}
+  <div class="toast" role="status" aria-live="polite" data-toast>{{ message }}</div>
+  {% endfor %}
+</div>
+{% endblock %}
 </body>
 </html>
