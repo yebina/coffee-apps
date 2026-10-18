@@ -25,6 +25,8 @@ constexpr int PIN_CS_BT = 5;  // Pmod TC1（BT）
 constexpr long SERIAL_BAUD = 115200;
 constexpr uint32_t SAMPLE_INTERVAL_MS = 100;  // MAX31855 の変換時間（最大100ms）に合わせる
 constexpr int AVG_SAMPLES = 5;                // READ では直近 0.5 秒の平均を返す
+// ノイズで単発の故障ビットが立つことがあるので、この回数（×100ms）続いたときだけ値なしにする
+constexpr int FAULT_TOLERANCE = 5;
 
 // ---- MAX31855 ---------------------------------------------------------------
 struct Max31855Reading {
@@ -92,6 +94,9 @@ class Averager {
 Averager btAvg;
 Averager ambientAvg;
 Max31855Reading lastBt{};
+Max31855Reading lastBtFault{};
+int btConsecutiveFaults = 0;
+uint32_t btFaultCount = 0;
 uint32_t lastSampleMs = 0;
 
 char channelMap[4] = {'1', '2', '0', '0'};  // Artisan の初期値 CHAN;1200 と同じ
@@ -103,9 +108,12 @@ void sample() {
   lastBt = readMax31855(PIN_CS_BT);
   ambientAvg.add(lastBt.internal);
   if (lastBt.fault) {
-    // 故障中の値は捨て、READ では -1 を返す
-    btAvg.clear();
+    // 故障中の値は捨てる。続いたときだけ平均を捨てて、READ で -1 を返す
+    lastBtFault = lastBt;
+    btFaultCount++;
+    if (++btConsecutiveFaults >= FAULT_TOLERANCE) btAvg.clear();
   } else {
+    btConsecutiveFaults = 0;
     btAvg.add(lastBt.thermocouple);
   }
 }
@@ -152,6 +160,12 @@ void handleDiag() {
   Serial.printf("# BT raw=0x%08lX tc=%.2fC internal=%.4fC fault=%d OC=%d SCG=%d SCV=%d\r\n",
                 static_cast<unsigned long>(r.raw), r.thermocouple, r.internal, r.fault,
                 r.openCircuit, r.shortToGnd, r.shortToVcc);
+  if (btFaultCount > 0) {
+    const Max31855Reading &f = lastBtFault;
+    Serial.printf("# 起動後の故障 %lu 回（最後: OC=%d SCG=%d SCV=%d）\r\n",
+                  static_cast<unsigned long>(btFaultCount), f.openCircuit, f.shortToGnd,
+                  f.shortToVcc);
+  }
   if (r.raw == 0x00000000 || r.raw == 0xFFFFFFFF) {
     Serial.println("# 応答がありません。配線（CS/MISO/SCK/3V3/GND）を確認してください");
   } else if (r.openCircuit) {
