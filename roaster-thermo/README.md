@@ -15,7 +15,7 @@ Artisan からは **TC4 互換デバイス**として見えるので、Artisan �
 | ESP32-DevKitC-32E（秋月 115673） | マイコン |
 | Digilent Pmod TC1 | 熱電対の変換器（MAX31855、冷接点補償つき） |
 | ジャンパー線 メス-メス（秋月 103475） | ESP32 と Pmod TC1 の配線（5本） |
-| 積層セラミックコンデンサー 0.01µF（秋月 108138） | 熱電対入力のノイズ対策（任意） |
+| 積層セラミックコンデンサー 0.01µF（秋月 108138） | 熱電対入力のノイズ対策（推奨） |
 | ミスミ MSNDFL1.6-200-F2-N | BT 用シース K 熱電対（非接地型、φ1.6×200mm、リード線 2m、端子なし） |
 | USB-C to micro-B ケーブル（データ通信対応） | Mac と ESP32 の接続 |
 
@@ -34,9 +34,9 @@ Pmod TC1 のピン番号は、基板の「1」の印がある側から数える�
 
 熱電対は Pmod TC1 の青い端子台に差し込む。
 
-- Pmod TC1 の端子台の横にある **`T-` / `RED` の印は − 側**。米国の色規格では K 型の赤線が − のため
-- ミスミのプローブは日本の色規格（JIS）で **赤 = ＋、白 = −**。つまり **白を `T-`（RED の印）側、赤を反対側**に挿す。色の名前に引きずられて逆にしやすいので注意
-- 0.01µF のコンデンサを使う場合は、2つの端子に熱電対の線と一緒に挟む
+- Pmod TC1 の端子台の横にある **`RED` の印は − 側**。米国の色規格では K 型の赤線が − のため
+- ミスミのプローブ（MSNDFL）は日本の色規格（JIS）で **赤 = ＋、白 = −**。つまり **白を `RED` の印の側、赤を反対側**に挿す。色の名前に引きずられて逆にしやすいので注意（2026-10-18 に実機で確認。赤を `RED` 側に挿すと、温めたときに表示が下がる）
+- **0.01µF のコンデンサを、2つの端子に熱電対の線と一緒に挟む**（推奨）。2m のリード線が拾うノイズで、MAX31855 が SCG（GND 短絡）を一瞬だけ誤検出することがある。実測では、何も触らない状態での誤検出が 30 秒あたり約 20 回から約 2 回に減った。誤検出が 0.5 秒未満で収まればファーム側で無視するので、READ の値には影響しない
 - 逆に挿すと、温めたときに温度が下がる。そのときは入れ替える
 
 ## ビルドと書き込み
@@ -78,14 +78,20 @@ cd roaster-thermo/firmware && pio device monitor
 
 ## Artisan の設定
 
-1. **Config → Device** で Meter に **TC4** を選ぶ
-   - ET Channel = **1**、BT Channel = **2**（初期値のまま）
-2. **Config → Port** で
-   - Comm Port: `/dev/cu.usbserial-…` または `/dev/cu.SLAB_USBtoUART`
-   - Baud Rate: **115200**
-3. **ON** を押すと BT が表示される。ET は 2 枚目の変換器を付けるまで表示されない
+Artisan 4.2.0（macOS、`brew install --cask artisan`）で確認した手順。メニュー名は英語表示のもの（Config → Language → English で切り替え、再起動）。
 
-Artisan がポートを開くと ESP32 が自動で再起動する（DevKitC の自動リセット回路のため）。そのため最初の 1 回だけ「Arduino could not set channels」というエラーが出ることがあるが、次のサンプリング（約 3 秒後）で自動的に再接続されるので無視してよい。エラーが出続ける場合は Port 設定（ポート名、115200）を見直す。
+1. **Config → Mode → Expert** にする。Default モードでは Device と Port のメニューが表示されない
+2. **Config → Device...** の **ET/BT** タブで
+   - 左の列の **TC4** のラジオボタンを選ぶ（Meter の一覧ではない）
+   - Arduino TC4 の欄: ET Channel = **1**、BT Channel = **2**、AT Channel = **None**（初期値のまま）
+   - **PID Firmware のチェックを外す**（このファームに PID 制御はない）
+3. **Config → Port...** の ET/BT タブで
+   - Comm Port: `CP2102N USB to UART Bridge Controller`（= `/dev/cu.usbserial-…`）
+   - Baud Rate: **115200**（Byte Size 8 / Parity N / Stopbits 1 は初期値のまま）
+4. **ON** を押すと左上に「TC4 initialized」と出て、BT が表示される。ET は 2 枚目の変換器を付けるまで `u.u`（値なし）
+5. 華氏で表示されたら **Config → Temperature → Celsius Mode**。Artisan が `UNITS;` で単位を送ってくるので、ファーム側の設定は不要
+
+最初の接続で「Arduino could not set channels」というエラーが 1 回だけ出ることがあるが、次のサンプリングで自動的に再接続されるので無視してよい。エラーが出続ける場合は Port 設定（ポート名、115200）を見直す。
 
 `ls /dev/cu.*` で `usbserial` 系のデバイスが見えないときは、ケーブルが充電専用でないか確認する。それでも見えなければ Silicon Labs の CP210x ドライバを入れる。
 
